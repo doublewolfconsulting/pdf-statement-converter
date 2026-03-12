@@ -24,7 +24,7 @@ pdf-statement-converter/
 ├── LICENSE            # Source-available, personal use only
 ├── .gitignore         # Blocks *.pdf, *.qif, *.csv — never commit financial data
 ├── index.html         # Main application (UI + parsers + QIF generation)
-└── categories.js      # Category rules for auto-classification (external config)
+└── categories.personal.js  # Category rules for auto-classification (external config)
 ```
 
 ## Architecture
