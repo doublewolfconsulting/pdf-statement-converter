@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Statement Converter</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 { margin-bottom: 10px; color: #333; }
+        .subtitle { color: #666; margin-bottom: 30px; }
+        .form-group { margin-bottom: 25px; }
+        label { 
+            display: block; 
+            font-weight: 600; 
+            margin-bottom: 8px;
+            color: #333;
+        }
+        input[type="number"], input[type="text"], select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+        .upload-area {
+            border: 2px dashed #cbd5e0;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            background: #f8fafc;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .upload-area:hover {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+        .upload-area input[type="file"] { display: none; }
+        .upload-icon { font-size: 48px; color: #9ca3af; margin-bottom: 10px; }
+        .upload-text { color: #3b82f6; font-weight: 600; margin-bottom: 5px; }
+        .upload-hint { color: #6b7280; font-size: 14px; }
+        .file-list {
+            margin-top: 15px;
+            padding: 15px;
+            background: #dbeafe;
+            border-radius: 6px;
+        }
+        .file-list strong { color: #1e40af; }
+        button {
+            width: 100%;
+            padding: 15px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover { background: #2563eb; }
+        button:disabled { background: #9ca3af; cursor: not-allowed; }
+        .error {
+            padding: 15px;
+            background: #fee2e2;
+            border: 2px solid #ef4444;
+            border-radius: 6px;
+            color: #991b1b;
+            margin-bottom: 20px;
+        }
+        .output-section { margin-top: 30px; }
+        .output-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .download-btn { width: auto; padding: 10px 20px; background: #10b981; }
+        .download-btn:hover { background: #059669; }
+        textarea {
+            width: 100%;
+            height: 300px;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 13px;
+            background: #f9fafb;
+        }
+        .info {
+            margin-top: 20px;
+            padding: 15px;
+            background: #dbeafe;
+            border: 1px solid #93c5fd;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #1e40af;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>PDF Statement Converter</h1>
+        <p class="subtitle">Convert bank/card statements to QIF format. Upload multiple PDFs to combine them.</p>
+        
+        <div class="form-group">
+            <label>Card Type</label>
+            <select id="cardType" onchange="updateFilename()">
+                <option value="citi-smrt">Citi SMRT Platinum Visa</option>
+                <option value="citi-rewards">Citi Rewards World Mastercard</option>
+                <option value="uob-absolute">UOB Absolute Cashback</option>
+                <option value="uob-privi">UOB PRVI Miles</option>
+                <option value="uob-preferred">UOB Preferred Platinum</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Starting N Number</label>
+            <input type="number" id="startingNumber" value="1" />
+        </div>
+
+        <div class="form-group">
+            <label>Output Filename</label>
+            <input type="text" id="outputFilename" value="Citi_SMRT" placeholder="statement" />
+            <small style="color: #6b7280; margin-top: 5px; display: block;">.qif extension will be added automatically</small>
+        </div>
+
+        <div class="form-group">
+            <label>Upload PDF Statement(s)</label>
+            <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                <div class="upload-icon">📄</div>
+                <div class="upload-text">Click to upload PDF files</div>
+                <div class="upload-hint">You can select multiple files</div>
+                <input type="file" id="fileInput" accept=".pdf,.txt" multiple onchange="handleFiles(this.files)">
+            </div>
+            <div id="fileList"></div>
+        </div>
+
+        <button id="convertBtn" onclick="convert()" disabled>Convert to QIF</button>
+
+        <div id="errorDiv"></div>
+        
+        <div id="outputSection" style="display: none;">
+            <div class="output-section">
+                <div class="output-header">
+                    <h3>QIF Output</h3>
+                    <button class="download-btn" onclick="downloadFile()">Download QIF</button>
+                </div>
+                <textarea id="qifOutput" readonly></textarea>
+                <p id="transactionCount" style="color: #6b7280; margin-top: 10px;"></p>
+            </div>
+        </div>
+
+        <div class="info">
+            🔒 <strong>Privacy:</strong> All processing happens in your browser. No data is sent to any server or stored anywhere.
+        </div>
+    </div>
+
+    <!-- External dependencies -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+    <!-- Category rules (external config) -->
+    <script src="categories.js"></script>
+
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        
+        let selectedFiles = [];
+
+        // ============================================================
+        // Month helpers
+        // ============================================================
+        const MONTHS = {
+            JAN: 1, FEB: 2, MAR: 3, APR: 4, MAY: 5, JUN: 6,
+            JUL: 7, AUG: 8, SEP: 9, OCT: 10, NOV: 11, DEC: 12
+        };
+
+        function formatDate(dateStr, year) {
+            const [day, monthStr] = dateStr.trim().split(/\s+/);
+            const month = MONTHS[monthStr.toUpperCase()];
+            const shortYear = year.slice(2);
+            return `${month}/${day}/${shortYear}`;
+        }
+
+        // ============================================================
+        // Category matching
+        // ============================================================
+        function categorizeTransaction(description) {
+            const upper = description.toUpperCase();
+            for (const [category, keywords] of Object.entries(CATEGORY_RULES)) {
+                for (const keyword of keywords) {
+                    if (upper.includes(keyword.toUpperCase())) return category;
+                }
+            }
+            return '';
+        }
+
+        // ============================================================
+        // PDF text extraction (client-side via PDF.js)
+        // ============================================================
+        async function extractTextFromPDF(file) {
+            const arrayBuffer = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+            let fullText = '';
+            for (let i = 1; i <= pdf.numPages; i++) {
+                const page = await pdf.getPage(i);
+                const textContent = await page.getTextContent();
+                let lastY = null, currentLine = '';
+                textContent.items.forEach((item, idx) => {
+                    const y = item.transform[5];
+                    if (lastY !== null && Math.abs(y - lastY) > 5) {
+                        fullText += currentLine.trim() + '\n';
+                        currentLine = '';
+                    }
+                    if (idx > 0) {
+                        const prevItem = textContent.items[idx - 1];
+                        const gap = item.transform[4] - (prevItem.transform[4] + prevItem.width);
+                        if (gap > 1) currentLine += ' ';
+                    }
+                    currentLine += item.str;
+                    lastY = y;
+                });
+                if (currentLine) fullText += currentLine.trim() + '\n';
+            }
+            return fullText;
+        }
+
+        // ============================================================
+        // Citi parser
+        // ============================================================
+        function parseStandardCitiTransactions(text, year) {
+            const transactions = [];
+            const lines = text.split(/\r?\n/);
+            for (const line of lines) {
+                const trimmed = line.trim();
+                const dateMatch = trimmed.match(/^(\d{1,2}\s+(?:JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC))\s+(.+)$/i);
+                if (!dateMatch) continue;
+                const [, dateStr, rest] = dateMatch;
+                if (rest.includes('DESCRIPTION') || rest.includes('AMOUNT') ||
+                    rest.toUpperCase().includes('BALANCE PREVIOUS') ||
+                    rest.toUpperCase().includes('TOTAL')) continue;
+
+                const creditMatch = rest.match(/^(.+?)\s+\((\d+\.?\d*)\)\s*$/);
+                if (creditMatch) {
+                    transactions.push({
+                        date: formatDate(dateStr, year),
+                        description: creditMatch[1].trim(),
+                        amount: parseFloat(creditMatch[2])
+                    });
+                    continue;
+                }
+                const debitMatch = rest.match(/^(.+?)\s+(\d+\.?\d*)\s*$/);
+                if (debitMatch) {
+                    transactions.push({
+                        date: formatDate(dateStr, year),
+                        description: debitMatch[1].trim(),
+                        amount: -parseFloat(debitMatch[2])
+                    });
+                }
+            }
+            return transactions;
+        }
+
+        // ============================================================
+        // UOB parser
+        // ============================================================
+        function extractUOBStatementInfo(text) {
+            const match = text.match(/Statement Date\s+(\d+)\s+([A-Z]{3})\s+(\d{4})/i);
+            if (!match) return { statementYear: '2025', stmtMonthNum: 1 };
+
+            const [, , monthStr, year] = match;
+            const stmtMonthNum = MONTHS[monthStr.toUpperCase()] || 1;
+
+            return { statementYear: year, stmtMonthNum };
+        }
+
+        function extractUOBYear(text) {
+            const { statementYear, stmtMonthNum } = extractUOBStatementInfo(text);
+            // If statement is Jan/Feb/Mar, some transactions may be from previous year
+            if (stmtMonthNum <= 3) {
+                return String(parseInt(statementYear) - 1);
+            }
+            return statementYear;
+        }
+        
+        function parseUOBTransactions(text, year, cardIdentifier) {
+            const transactions = [];
+            const lines = text.split(/\r?\n/);
+            let inCardSection = false;
+            let currentTransaction = null;
+
+            // Get statement info for cross-year detection
+            const { statementYear, stmtMonthNum } = extractUOBStatementInfo(text);
+            
+            for (let i = 0; i < lines.length; i++) {
+                const trimmed = lines[i].trim();
+
+                // Card section entry
+                if (!inCardSection && trimmed.includes(cardIdentifier) && !trimmed.includes('TOTAL BALANCE')) {
+                    inCardSection = true;
+                    continue;
+                }
+
+                // Card section exit
+                if (inCardSection) {
+                    const otherCards = ['ABSOLUTE CASHBACK AMEX', 'PRVI MILES MASTERCARD', 'PREFERRED PLATINUM VISA'];
+                    for (const otherCard of otherCards) {
+                        if (otherCard !== cardIdentifier && trimmed.includes(otherCard)) {
+                            inCardSection = false;
+                            break;
+                        }
+                    }
+                    if (trimmed.includes('Total Amount Due') ||
+                        trimmed.includes('New Balance') ||
+                        (trimmed.includes('Page') && trimmed.match(/Page\s+\d+\s+of\s+\d+/))) {
+                        inCardSection = false;
+                    }
+                }
+                if (!inCardSection) continue;
+                
+                // Transaction line: POST_DATE  TRANS_DATE  DESCRIPTION [AMOUNT [CR]]
+                const txMatch = trimmed.match(
+                    /^(\d{1,2}\s+(?:JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC))\s+(\d{1,2}\s+(?:JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC))\s+(.+)$/i
+                );
+
+                if (txMatch) {
+                    const [, postDate, transDate, description] = txMatch;
+                    if (description.toUpperCase().includes('DESCRIPTION') ||
+                        description.toUpperCase().includes('POST DATE') ||
+                        description.toUpperCase().includes('PREVIOUS BALANCE')) continue;
+                    
+                    // Determine correct year for this transaction
+                    const txMonthStr = transDate.trim().split(/\s+/)[1].toUpperCase();
+                    const txMonthNum = MONTHS[txMonthStr] || 1;
+                    let txYear = statementYear;
+                    
+                    // If transaction month is much later than statement month → previous year
+                    // e.g., Statement JAN (1), transaction DEC (12) → previous year
+                    if (txMonthNum > stmtMonthNum + 6) {
+                        txYear = String(parseInt(statementYear) - 1);
+                    }
+                    
+                    // Check if amount is on the same line
+                    const sameLine = description.match(/^(.+?)\s+(\d+[,\d]*\.?\d*)(\s+CR)?\s*$/i);
+                    if (sameLine) {
+                        const desc = sameLine[1].trim();
+                        const amount = parseFloat(sameLine[2].replace(/,/g, ''));
+                        const isCredit = sameLine[3] !== undefined;
+                        transactions.push({
+                            date: formatDate(transDate, txYear),
+                            description: desc,
+                            amount: isCredit ? amount : -amount
+                        });
+                        currentTransaction = null;
+                    } else {
+                        // Multi-line: amount on next line(s)
+                        currentTransaction = { date: formatDate(transDate, txYear), description: description.trim() };
+                    }
+                } else if (currentTransaction) {
+                    // Skip reference number lines
+                    if (trimmed.match(/^Ref No\./i)) continue;
+                    
+                    // Amount line: must have decimal point (e.g., "63.31" not "069")
+                    const amountMatch = trimmed.match(/^(\d+[,\d]*\.\d{2})(\s+CR)?\s*$/);
+                    if (amountMatch) {
+                        const amount = parseFloat(amountMatch[1].replace(/,/g, ''));
+                        const isCredit = amountMatch[2] !== undefined;
+                        transactions.push({
+                            date: currentTransaction.date,
+                            description: currentTransaction.description,
+                            amount: isCredit ? amount : -amount
+                        });
+                        currentTransaction = null;
+                    }
+                }
+            }
+            return transactions;
+        }
+
+        // ============================================================
+        // Parser registry
+        // ============================================================
+        const PARSERS = {
+            'citi-smrt': {
+                name: 'Citi SMRT Platinum Visa',
+                extractYear: (text) => {
+                    const match = text.match(/Statement Date\s+\w+\s+\d+,?\s+(\d{4})/i);
+                    return match ? match[1] : '2025';
+                },
+                parseTransactions: parseStandardCitiTransactions
+            },
+            'citi-rewards': {
+                name: 'Citi Rewards World Mastercard',
+                extractYear: (text) => {
+                    const stmtMatch = text.match(/Statement Date\s+\w+\s+\d+,?\s+(\d{4})/i);
+                    if (stmtMatch) return stmtMatch[1];
+                    const dueMatch = text.match(/Payment Due Date:\s+(\w+)\s+\d+,?\s+(\d{4})/i);
+                    if (dueMatch) {
+                        const [, month, year] = dueMatch;
+                        const earlyMonths = ['JANUARY', 'FEBRUARY', 'MARCH'];
+                        return earlyMonths.includes(month.toUpperCase()) ? String(parseInt(year) - 1) : year;
+                    }
+                    return '2025';
+                },
+                parseTransactions: parseStandardCitiTransactions
+            },
+            'uob-absolute': {
+                name: 'UOB Absolute Cashback',
+                cardIdentifier: 'ABSOLUTE CASHBACK AMEX',
+                extractYear: extractUOBYear,
+                parseTransactions: parseUOBTransactions
+            },
+            'uob-privi': {
+                name: 'UOB PRVI Miles',
+                cardIdentifier: 'PRVI MILES MASTERCARD',
+                extractYear: extractUOBYear,
+                parseTransactions: parseUOBTransactions
+            },
+            'uob-preferred': {
+                name: 'UOB Preferred Platinum',
+                cardIdentifier: 'PREFERRED PLATINUM VISA',
+                extractYear: extractUOBYear,
+                parseTransactions: parseUOBTransactions
+            }
+        };
+
+        // ============================================================
+        // QIF generation
+        // ============================================================
+        function generateQIF(transactions, startNum) {
+            let qif = '!Option:MDY\n!Type:CCard\n';
+            let num = startNum;
+            transactions.forEach(txn => {
+                qif += `D${txn.date}\nU${txn.amount.toFixed(2)}\nT${txn.amount.toFixed(2)}\nCX\nN${num}\nP${txn.description}\n`;
+                const category = categorizeTransaction(txn.description);
+                if (category) qif += `L${category}\n`;
+                qif += `^\n`;
+                num++;
+            });
+            return qif;
+        }
+
+        // ============================================================
+        // Statement parsing orchestrator
+        // ============================================================
+        async function parseBankStatement(file, cardType) {
+            const parser = PARSERS[cardType];
+            if (!parser) throw new Error('Unsupported card type: ' + cardType);
+            const isPDF = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+            const text = isPDF ? await extractTextFromPDF(file) : await file.text();
+            const year = parser.extractYear(text);
+            if (parser.cardIdentifier) return parser.parseTransactions(text, year, parser.cardIdentifier);
+            return parser.parseTransactions(text, year);
+        }
+
+        // ============================================================
+        // UI handlers
+        // ============================================================
+        function updateFilename() {
+            const cardType = document.getElementById('cardType').value;
+            const filenameMap = {
+                'citi-smrt': 'Citi_SMRT',
+                'citi-rewards': 'Citi_Rewards',
+                'uob-absolute': 'UOB_Absolute_Cashback',
+                'uob-privi': 'UOB_PRVI_Miles',
+                'uob-preferred': 'UOB_Preferred_Platinum'
+            };
+            document.getElementById('outputFilename').value = filenameMap[cardType] || 'statement';
+        }
+        
+        function handleFiles(files) {
+            selectedFiles = Array.from(files);
+            const fileList = document.getElementById('fileList');
+            const convertBtn = document.getElementById('convertBtn');
+            if (selectedFiles.length > 0) {
+                fileList.innerHTML = `<div class="file-list"><strong>Selected ${selectedFiles.length} file(s):</strong><br>${selectedFiles.map(f => f.name).join('<br>')}</div>`;
+                convertBtn.disabled = false;
+            } else {
+                fileList.innerHTML = '';
+                convertBtn.disabled = true;
+            }
+        }
+
+        async function convert() {
+            const errorDiv = document.getElementById('errorDiv');
+            const outputSection = document.getElementById('outputSection');
+            const qifOutput = document.getElementById('qifOutput');
+            const transactionCount = document.getElementById('transactionCount');
+            const startingNumber = parseInt(document.getElementById('startingNumber').value) || 1;
+            const cardType = document.getElementById('cardType').value;
+            
+            console.log('=== CONVERSION START ===');
+            console.log('Card Type:', PARSERS[cardType].name);
+            console.log('Starting N Number:', startingNumber);
+            console.log('Files to process:', selectedFiles.length);
+            
+            errorDiv.innerHTML = '';
+            outputSection.style.display = 'none';
+            
+            try {
+                let allTransactions = [];
+                
+                for (const file of selectedFiles) {
+                    console.log(`\n📄 Processing: ${file.name}`);
+                    const transactions = await parseBankStatement(file, cardType);
+                    console.log(`   ✓ Found ${transactions.length} transactions`);
+                    
+                    if (transactions.length > 0) {
+                        console.log(`   📅 Date range: ${transactions[0].date} to ${transactions[transactions.length-1].date}`);
+                    }
+                    
+                    allTransactions.push(...transactions);
+                }
+                
+                console.log(`\n📊 TOTAL: ${allTransactions.length} transactions from ${selectedFiles.length} file(s)`);
+                
+                if (allTransactions.length === 0) {
+                    console.warn('⚠️ No transactions found');
+                    errorDiv.innerHTML = `<div class="error">No transactions found in uploaded statement(s).</div>`;
+                    return;
+                }
+                
+                // Sort by date
+                allTransactions.sort((a, b) => {
+                    const [m1, d1, y1] = a.date.split('/').map(Number);
+                    const [m2, d2, y2] = b.date.split('/').map(Number);
+                    return new Date(2000 + y1, m1 - 1, d1) - new Date(2000 + y2, m2 - 1, d2);
+                });
+                
+                console.log(`📅 After sorting: ${allTransactions[0].date} to ${allTransactions[allTransactions.length-1].date}`);
+                
+                // Category breakdown
+                const categoryStats = {};
+                allTransactions.forEach(txn => {
+                    const cat = categorizeTransaction(txn.description) || '[Uncategorized]';
+                    categoryStats[cat] = (categoryStats[cat] || 0) + 1;
+                });
+                
+                console.log('\n📂 Category Breakdown:');
+                Object.entries(categoryStats).sort((a, b) => b[1] - a[1]).forEach(([cat, count]) => {
+                    console.log(`   ${cat}: ${count} transactions`);
+                });
+                
+                const qif = generateQIF(allTransactions, startingNumber);
+                qifOutput.value = qif;
+                transactionCount.textContent = `Generated ${allTransactions.length} transactions`;
+                outputSection.style.display = 'block';
+                
+                console.log('\n✅ CONVERSION COMPLETE');
+                console.log(`N numbers: ${startingNumber} to ${startingNumber + allTransactions.length - 1}`);
+                console.log('=== END ===\n');
+                
+            } catch (err) {
+                console.error('❌ ERROR:', err);
+                errorDiv.innerHTML = `<div class="error">Error: ${err.message}</div>`;
+            }
+        }
+
+        function downloadFile() {
+            const qifContent = document.getElementById('qifOutput').value;
+            let filename = document.getElementById('outputFilename').value.trim() || 'statement';
+            filename = filename.replace(/\.qif$/i, '') + '.qif';
+            const blob = new Blob([qifContent], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>

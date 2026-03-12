@@ -1,0 +1,19 @@
+# Never commit financial documents
+*.pdf
+*.qif
+*.csv
+*.ofx
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Node (in case we add tooling later)
+node_modules/
