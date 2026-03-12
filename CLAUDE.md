@@ -55,7 +55,7 @@ pdf-statement-converter/
 | UOB | Absolute Cashback (AMEX) | `uob-absolute` | `ABSOLUTE CASHBACK AMEX` | Multi-card PDF — identifier isolates this card's section |
 | UOB | PRVI Miles (Mastercard) | `uob-privi` | `PRVI MILES MASTERCARD` | Multi-card PDF — identifier isolates this card's section |
 | UOB | Preferred Platinum (Visa) | `uob-preferred` | `PREFERRED PLATINUM VISA` | Multi-card PDF — identifier isolates this card's section |
-| AMEX | KrisFlyer (Singapore Airlines) | `amex-krisflyer` | N/A | Single card per PDF — amounts and descriptions extracted in separate blocks |
+| AMEX | KrisFlyer (Singapore Airlines) | `amex-krisflyer` | N/A | Single card per PDF — amounts and descriptions extracted in separate blocks; paired positionally |
 
 ## Coding Standards
 
@@ -70,7 +70,7 @@ pdf-statement-converter/
 2. Create a parser function following the pattern of `parseStandardCitiTransactions` (single-line) or `parseUOBTransactions` (multi-line with card section isolation)
 3. Handle year detection — watch out for cross-year statements (e.g., January statement with December transactions)
 4. Register the parser in the `PARSERS` object with `name`, `extractYear`, `parseTransactions`, and optionally `cardIdentifier`
-5. Add the card option to the HTML `<select id="cardType">` dropdown
+5. Add the card option to both the hidden `<select id="cardType">` and the `<ul id="cardTypeOptions">` custom dropdown in `index.html`
 6. Add the filename mapping in `updateFilename()`
 7. Update this file's Supported Cards table
 

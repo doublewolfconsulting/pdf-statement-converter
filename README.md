@@ -13,6 +13,7 @@ A privacy-first, client-side tool that converts bank and credit card PDF stateme
 | UOB | Absolute Cashback (AMEX) | ✅ Supported |
 | UOB | PRVI Miles (Mastercard) | ✅ Supported |
 | UOB | Preferred Platinum (Visa) | ✅ Supported |
+| AMEX | KrisFlyer (Singapore Airlines) | ✅ Supported |
 
 ## Quick Start
 
@@ -30,7 +31,7 @@ If you fork this repo, you can enable GitHub Pages in your repo settings (Settin
 
 1. **PDF.js** extracts text from your PDF entirely in the browser
 2. A **bank-specific parser** identifies transactions based on the statement format
-3. Transactions are **auto-categorized** using keyword matching (configurable in `categories.js`)
+3. Transactions are **auto-categorized** using keyword matching (configurable in `categories.personal.js`)
 4. Output is generated in **QIF format** with sequential N-numbers for import
 
 ## File Structure
@@ -86,7 +87,7 @@ Contributions are welcome! See [ROADMAP.md](ROADMAP.md) for planned features. Th
 1. Study your bank's PDF statement format (use browser console to inspect extracted text)
 2. Add a parser function following the pattern in `index.html` (see `parseStandardCitiTransactions` or `parseUOBTransactions`)
 3. Register it in the `PARSERS` object
-4. Add the card option to the HTML `<select>` dropdown
+4. Add the card option to the card type dropdown (both the hidden `<select>` and the custom dropdown list in `index.html`)
 5. Submit a PR — no real statement data please, just the parser logic
 
 ## License
