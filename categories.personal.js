@@ -24,7 +24,7 @@ const CATEGORY_RULES = {
 
     // --- Vehicle ---
     'Fahrzeuge:Parkgebühren': ['PARKING'],
-    'Fahrzeuge:Benzin': ['SPC'],
+    'Fahrzeuge:Benzin': ['SPC', 'SINGAPORE PETROLEUM'],
     'Fahrzeuge:TÜV': ['VICOM'],
 
     // --- Food & Drink ---
@@ -40,7 +40,7 @@ const CATEGORY_RULES = {
         'STUFF', 'MERCI MARCEL', 'LOTUS NGUYEN', 'KAZBAR', 'SPIZZA',
         'KEBAB', 'MCDONALD', 'ENSEEDS', 'CO CHUNG', 'PPUNCH', 'SUSHI BAR',
         'WARMUPCAFE', 'OPERETTA CORNER BAR', 'AUTHENTIC THAI',
-        'MEXICAN FOOD CORP', 'BROTZEIT', 'SUSHI-TEI'
+        'MEXICAN FOOD CORP', 'BROTZEIT', 'SUSHI-TEI', 'AYAMPRESIDENT'
     ],
     'Ernährung:Coffee': [
         'MORNING GRIND', 'ALCHEMIST', 'COFFEE', 'ESPRESSO',
@@ -55,7 +55,7 @@ const CATEGORY_RULES = {
     // --- Payments & Banking ---
     '[SG-HSBC-Premier]': ['GIRO PAYMENT', 'PAYMENT', 'THANK YOU'],
     '[SG-YouTrip-SGD]': ['YOUTRIP'],
-    'Kreditkartenkosten': ['ANNUAL MEMBER FEE', 'MEMBERSHIP FEE', 'GST ON MEMBERSHIP'],
+    'Kreditkartenkosten': ['ANNUAL MEMBER FEE', 'MEMBERSHIP FEE', 'GST ON MEMBERSHIP', 'CARD ANNUAL FEE', 'GST', 'REVERSAL GST', 'REFUND OF CARD ANNUAL FEE'],
     'Zinseinkünfte': ['CR INTEREST'],
     'Cashback': ['UOB ABSOLUTE CASHBACK', 'CASHBACK'],
 
@@ -70,6 +70,7 @@ const CATEGORY_RULES = {
     // --- Housing & Utilities ---
     'Nebenk. Wohnung:Telefon': ['GOMO MOBILE'],
     'Nebenk. Wohnung:Internet': ['STARHUB RECUR'],
+    'Nebenk. Wohnung:TV': ['NETFLIX'],
 
     // --- Pets ---
     'Pets:Food': ['PET LOVERS'],
