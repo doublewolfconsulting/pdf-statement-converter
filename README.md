@@ -37,15 +37,27 @@ If you fork this repo, you can enable GitHub Pages in your repo settings (Settin
 
 ```
 pdf-statement-converter/
-├── index.html        # Main application (open this in your browser)
-├── categories.js     # Category rules for auto-classification (edit this!)
-├── README.md         # This file
-└── ROADMAP.md        # Planned features and development priorities
+├── index.html                # Main application (open this in your browser)
+├── categories.default.js     # Default English categories — copy this to get started
+├── categories.personal.js    # Personal categories — loaded by default
+├── README.md                 # This file
+└── ROADMAP.md                # Planned features and development priorities
 ```
 
 ## Customizing Categories
 
-Edit `categories.js` to add your own merchant keywords and categories. The format is straightforward:
+The repo includes two category files:
+
+- **`categories.default.js`** — a clean English starting point with common categories
+- **`categories.personal.js`** — the active file loaded by the tool
+
+To set up your own categories:
+
+1. Copy `categories.default.js` and rename it `categories.personal.js`
+2. Edit it with your own merchant keywords and category names
+3. Open `index.html` — your categories will be used automatically
+
+The format is straightforward:
 
 ```javascript
 const CATEGORY_RULES = {

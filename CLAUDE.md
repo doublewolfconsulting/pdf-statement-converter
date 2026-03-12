@@ -73,9 +73,18 @@ pdf-statement-converter/
 6. Add the filename mapping in `updateFilename()`
 7. Update this file's Supported Cards table
 
-## Adding Categories
+## Category Files
 
-Edit `categories.js`. Format:
+Two category files are committed:
+
+| File | Purpose |
+|------|---------|
+| `categories.personal.js` | Personal file — German categories, Singapore-specific merchants. Loaded by default in `index.html`. |
+| `categories.default.js` | Clean English starting point for new users. Copy and rename to `categories.personal.js` to use. |
+
+To switch which file is loaded, update the `<script src="...">` tag in `index.html`.
+
+Format:
 
 ```javascript
 'Category:Subcategory': ['KEYWORD1', 'KEYWORD2'],
@@ -83,7 +92,6 @@ Edit `categories.js`. Format:
 
 - Keywords are **case-insensitive** and use **substring matching** ("contains")
 - First match wins — put specific keywords before generic ones
-- Category names use German accounting conventions (Fahrtkosten, Ernährung, etc.)
 
 ## Known Parsing Challenges
 
