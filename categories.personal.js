@@ -19,13 +19,14 @@
 const CATEGORY_RULES = {
     // --- Transport ---
     'Fahrtkosten:Bus & MRT': ['BUS/MRT', 'BUS', 'MRT'],
-    'Fahrtkosten:Taxi': ['GOJEK', 'RYDE'],
+    'Fahrtkosten:Taxi': ['GOJEK', 'RYDE', 'GRAB', 'TADA'],
     'Fahrtkosten:Bike': ['HELLORIDE'],
 
     // --- Vehicle ---
     'Fahrzeuge:Parkgebühren': ['PARKING'],
     'Fahrzeuge:Benzin': ['SPC', 'SINGAPORE PETROLEUM'],
     'Fahrzeuge:TÜV': ['VICOM'],
+    'Fahrzeuge:Steuer': ['LTA E-SERVICE', 'LTA ESERVICE'],
 
     // --- Food & Drink ---
     'Ernährung:Groceries': [
@@ -79,6 +80,7 @@ const CATEGORY_RULES = {
     'Freizeit:Drinks': ['DRUGGISTS', 'KULT KAFE', 'BREWERKZ', 'HARRY', 'MORTAR AND PESTLE', 'BAR NKD'],
     'Freizeit:Kino': ['THEATRES'],
     'Freizeit:Sport': ['SUPERBOWL'],
+    'Freizeit:Gym': ['F45'],
     'Freizeit:Massage': ['NATURELAND'],
 
     // --- Travel ---

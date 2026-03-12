@@ -181,6 +181,7 @@
                 <option value="uob-privi">UOB PRVI Miles</option>
                 <option value="uob-preferred">UOB Preferred Platinum</option>
                 <option value="amex-krisflyer">AMEX KrisFlyer</option>
+                <option value="sc-simply-cash">SC Simply Cash</option>
             </select>
             <div class="custom-select" id="cardTypeSelect">
                 <div class="custom-select-trigger" id="cardTypeTrigger">Citi SMRT Platinum Visa</div>
@@ -191,6 +192,7 @@
                     <li data-value="uob-privi">UOB PRVI Miles</li>
                     <li data-value="uob-preferred">UOB Preferred Platinum</li>
                     <li data-value="amex-krisflyer">AMEX KrisFlyer</li>
+                    <li data-value="sc-simply-cash">SC Simply Cash</li>
                 </ul>
             </div>
         </div>
@@ -328,6 +330,11 @@
                     lastY = y;
                 });
                 if (currentLine) fullText += currentLine.trim() + '\n';
+            }
+            // Log in chunks to avoid console truncation
+            const chunkSize = 3000;
+            for (let i = 0; i < fullText.length; i += chunkSize) {
+                console.log(`=== RAW TEXT [${i}–${Math.min(i + chunkSize, fullText.length)}] ===\n` + fullText.slice(i, i + chunkSize));
             }
             return fullText;
         }
@@ -481,6 +488,95 @@
                     }
                 }
             }
+            return transactions;
+        }
+
+        // ============================================================
+        // Standard Chartered Simply Cash parser
+        // ============================================================
+        // The SC consolidated statement PDF renders transaction data across two sections:
+        //
+        //   PAGE 3 — DESCRIPTION COLUMN:
+        //     "GIRO PAYMENT"  (plain text — credit/cashback posted via GIRO)
+        //     "Transaction Ref XXXXXXXXMERCHANTNAMEHERE"  (ref digits concatenated with merchant)
+        //
+        //   PAGE 4 — DATE + AMOUNT COLUMNS:
+        //     "DD Mon  DD Mon  Amount[CR]"  (transaction date, posting date, amount)
+        //
+        // Savings account rows use "DD Mon YYYY Description..." (4-digit year) so they
+        // don't collide with the credit card "DD Mon DD Mon Amount" pattern.
+        //
+        // Descriptions and amounts are paired positionally. Any amount row without a
+        // matching description (e.g. the GIRO bank deduction at end) gets "GIRO PAYMENT".
+        // Transaction date (first date on the row) is used, consistent with other parsers.
+        function parseSCSimplyCashTransactions(text) {
+            const transactions = [];
+            const lines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l);
+
+            // Statement date: "Statement Date: 15 Mar 2025"
+            const stmtMatch = text.match(/Statement Date:\s+(\d{1,2})\s+(\w{3})\s+(\d{4})/i);
+            const statementYear = stmtMatch ? stmtMatch[3] : '2025';
+            const stmtMonthNum = stmtMatch ? (MONTHS[stmtMatch[2].toUpperCase()] || 1) : 1;
+
+            // Convert "DD" + "Mon" to QIF format M/D/YY with cross-year detection
+            function scFormatDate(day, mon) {
+                const d = parseInt(day);
+                const m = MONTHS[mon.substring(0, 3).toUpperCase()] || 1;
+                // If transaction month is much later than statement month → previous year
+                // e.g. December transactions in a January statement
+                let year = statementYear;
+                if (m > stmtMonthNum + 6) year = String(parseInt(statementYear) - 1);
+                return `${m}/${d}/${year.slice(2)}`;
+            }
+
+            // ── Pass 1: Collect descriptions ──────────────────────────────────
+            // Find first "Transaction Ref" line, look back up to 20 lines for a
+            // standalone "GIRO PAYMENT", then collect all Transaction Ref lines.
+            const descriptions = [];
+            let firstTxRefIdx = -1;
+            for (let i = 0; i < lines.length; i++) {
+                if (/^Transaction Ref\s+\d+/.test(lines[i])) { firstTxRefIdx = i; break; }
+            }
+            if (firstTxRefIdx >= 0) {
+                for (let i = Math.max(0, firstTxRefIdx - 20); i < firstTxRefIdx; i++) {
+                    // Exact match only — avoids "5498-34XX-XXXX-4769 GIRO PAYMENT" in header
+                    if (lines[i] === 'GIRO PAYMENT') descriptions.push('GIRO PAYMENT');
+                }
+                for (let i = firstTxRefIdx; i < lines.length; i++) {
+                    const m = lines[i].match(/^Transaction Ref\s+\d+(.+)$/);
+                    if (m) descriptions.push(m[1].trim());
+                }
+            }
+
+            // ── Pass 2: Collect transaction rows (date + amount) ──────────────
+            // Pattern "DD Mon DD Mon Amount[CR]" is unique to credit card sections.
+            // Savings rows use "DD Mon YYYY Description..." and don't match.
+            const MON = 'Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec';
+            const txRowRe = new RegExp(
+                `^(\\d{1,2})\\s+(${MON})\\s+\\d{1,2}\\s+(?:${MON})\\s+([\\d,]+\\.\\d{2})(CR)?\\s*$`, 'i'
+            );
+            const amountRows = [];
+            for (const line of lines) {
+                const m = line.match(txRowRe);
+                if (!m) continue;
+                amountRows.push({
+                    date: scFormatDate(m[1], m[2]),
+                    value: parseFloat(m[3].replace(/,/g, '')),
+                    isCredit: m[4] !== undefined
+                });
+            }
+
+            // ── Pass 3: Pair descriptions with amounts positionally ───────────
+            for (let i = 0; i < amountRows.length; i++) {
+                const { date, value, isCredit } = amountRows[i];
+                const description = i < descriptions.length ? descriptions[i] : 'GIRO PAYMENT';
+                transactions.push({
+                    date,
+                    description,
+                    amount: isCredit ? value : -value
+                });
+            }
+
             return transactions;
         }
 
@@ -644,6 +740,14 @@
                     return m ? m[1] : '2025';
                 },
                 parseTransactions: parseAMEXTransactions
+            },
+            'sc-simply-cash': {
+                name: 'SC Simply Cash',
+                extractYear: (text) => {
+                    const m = text.match(/Statement Date:\s+\d{1,2}\s+\w{3}\s+(\d{4})/i);
+                    return m ? m[1] : '2025';
+                },
+                parseTransactions: parseSCSimplyCashTransactions
             }
         };
 
@@ -687,7 +791,8 @@
                 'uob-absolute': 'UOB_Absolute_Cashback',
                 'uob-privi': 'UOB_PRVI_Miles',
                 'uob-preferred': 'UOB_Preferred_Platinum',
-                'amex-krisflyer': 'AMEX_KrisFlyer'
+                'amex-krisflyer': 'AMEX_KrisFlyer',
+                'sc-simply-cash': 'SC_Simply_Cash'
             };
             document.getElementById('outputFilename').value = filenameMap[cardType] || 'statement';
         }
