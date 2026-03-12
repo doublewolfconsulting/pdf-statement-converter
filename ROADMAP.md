@@ -15,26 +15,34 @@ Development priorities for PDF Statement Converter. Items are roughly ordered by
 - [x] Multi-card statement section isolation (UOB)
 - [x] External category config file (`categories.js`)
 
-## Phase 2: More Banks & Cards
+## Phase 2: Credit Card Parsers
 
-- [ ] HSBC statement parser
-- [ ] Standard Chartered statement parser
-- [ ] DBS statement parser
-- [x] AMEX statement parser
-- [ ] YOUTRIP statement parser
-- [ ] REVOLUT statement parser
-- [ ] WISE statement parser
-- [ ] IB statement parser
+- [x] AMEX KrisFlyer parser
+- [x] SC Simply Cash parser
+- [ ] SC Priority Banking Visa Infinite parser
+- [ ] HSBC credit card parser
+- [ ] DBS credit card parser
+- [ ] YOUTRIP parser
+- [ ] REVOLUT parser
 - [ ] Auto-detect card type from PDF content (no manual selection needed)
 
-## Phase 3: Export Formats
+## Phase 3: Bank Account Parsers
+
+*(Requires QIF account type research — deferred until Phase 2 is complete)*
+
+- [ ] SC eSaver account parser
+- [ ] SC Bonus$aver account parser
+- [ ] SC Securities Settlement Account parser
+- [ ] HSBC bank account parser
+
+## Phase 4: Export Formats
 
 - [ ] Export format dropdown (QIF and CSV, and future formats)
 - [ ] CSV export with configurable column mapping
 - [ ] OFX export (broader accounting software support)
 - [ ] JSON export (for developers / custom pipelines)
 
-## Phase 4: Parsing Quality & UX
+## Phase 5: Parsing Quality & UX
 
 - [ ] Transaction preview table before export (review before download)
 - [ ] Uncategorized transaction highlighting
@@ -43,14 +51,14 @@ Development priorities for PDF Statement Converter. Items are roughly ordered by
 - [ ] Running total / balance validation against statement totals
 - [ ] Drag-and-drop file upload
 
-## Phase 5: Category Management
+## Phase 6: Category Management
 
 - [ ] In-app category editor (add/edit/remove without touching code)
 - [ ] Import/export category rules (share configs between users)
 - [ ] Category suggestions for uncategorized transactions
 - [ ] Per-bank default category mappings
 
-## Phase 6: Deployment & Distribution
+## Phase 7: Deployment & Distribution
 
 - [ ] GitHub Pages hosting
 - [ ] Optional AWS hosting with custom domain
