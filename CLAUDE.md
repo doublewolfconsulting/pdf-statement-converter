@@ -49,7 +49,7 @@ pdf-statement-converter/
 ## Supported Cards
 
 | Bank | Card | Parser Key | Card Identifier | Notes |
-|------|------|------------|-----------------|-------|
+| --- | --- | --- | --- | --- |
 | Citi | SMRT Platinum Visa | `citi-smrt` | N/A | One card per PDF — no section isolation needed |
 | Citi | Rewards World Mastercard | `citi-rewards` | N/A | One card per PDF — no section isolation needed |
 | UOB | Absolute Cashback (AMEX) | `uob-absolute` | `ABSOLUTE CASHBACK AMEX` | Multi-card PDF — identifier isolates this card's section |
@@ -78,7 +78,7 @@ pdf-statement-converter/
 Two category files are committed:
 
 | File | Purpose |
-|------|---------|
+| --- | --- |
 | `categories.personal.js` | Personal file — German categories, Singapore-specific merchants. Loaded by default in `index.html`. |
 | `categories.default.js` | Clean English starting point for new users. Copy and rename to `categories.personal.js` to use. |
 
@@ -115,6 +115,7 @@ gh pr create
 ```
 
 Branch naming:
+
 - `feature/` — new functionality (new parsers, export formats)
 - `fix/` — bug fixes (parsing errors, year detection issues)
 - `docs/` — documentation changes
@@ -131,6 +132,7 @@ These are absolute and apply to all development:
 ## Current Roadmap Priority
 
 See ROADMAP.md for full details. Next priorities:
+
 1. More bank parsers (HSBC, Standard Chartered, DBS)
 2. Export format dropdown (CSV alongside QIF)
 3. Transaction preview table before export
