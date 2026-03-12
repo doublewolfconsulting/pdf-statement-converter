@@ -1,14 +1,17 @@
 # Never commit financial documents
+
 *.pdf
 *.qif
 *.csv
 *.ofx
 
 # OS files
+
 .DS_Store
 Thumbs.db
 
 # Editor files
+
 *.swp
 *.swo
 *~

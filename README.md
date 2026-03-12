@@ -7,7 +7,7 @@ A privacy-first, client-side tool that converts bank and credit card PDF stateme
 ## Supported Cards
 
 | Bank | Card | Status |
-|------|------|--------|
+| ------ | ------ | -------- |
 | Citi | SMRT Platinum Visa | ✅ Supported |
 | Citi | Rewards World Mastercard | ✅ Supported |
 | UOB | Absolute Cashback (AMEX) | ✅ Supported |
@@ -35,7 +35,7 @@ If you fork this repo, you can enable GitHub Pages in your repo settings (Settin
 
 ## File Structure
 
-```
+``` text
 pdf-statement-converter/
 ├── index.html                # Main application (open this in your browser)
 ├── categories.default.js     # Default English categories — copy this to get started
