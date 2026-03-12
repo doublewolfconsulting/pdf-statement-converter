@@ -48,13 +48,13 @@ pdf-statement-converter/
 
 ## Supported Cards
 
-| Bank | Card | Parser Key | Card Identifier |
-|------|------|------------|-----------------|
-| Citi | SMRT Platinum Visa | `citi-smrt` | — |
-| Citi | Rewards World Mastercard | `citi-rewards` | — |
-| UOB | Absolute Cashback (AMEX) | `uob-absolute` | `ABSOLUTE CASHBACK AMEX` |
-| UOB | PRVI Miles (Mastercard) | `uob-privi` | `PRVI MILES MASTERCARD` |
-| UOB | Preferred Platinum (Visa) | `uob-preferred` | `PREFERRED PLATINUM VISA` |
+| Bank | Card | Parser Key | Card Identifier | Notes |
+|------|------|------------|-----------------|-------|
+| Citi | SMRT Platinum Visa | `citi-smrt` | N/A | One card per PDF — no section isolation needed |
+| Citi | Rewards World Mastercard | `citi-rewards` | N/A | One card per PDF — no section isolation needed |
+| UOB | Absolute Cashback (AMEX) | `uob-absolute` | `ABSOLUTE CASHBACK AMEX` | Multi-card PDF — identifier isolates this card's section |
+| UOB | PRVI Miles (Mastercard) | `uob-privi` | `PRVI MILES MASTERCARD` | Multi-card PDF — identifier isolates this card's section |
+| UOB | Preferred Platinum (Visa) | `uob-preferred` | `PREFERRED PLATINUM VISA` | Multi-card PDF — identifier isolates this card's section |
 
 ## Coding Standards
 
