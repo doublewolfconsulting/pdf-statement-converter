@@ -19,14 +19,17 @@ Development priorities for PDF Statement Converter. Items are roughly ordered by
 
 - [ ] HSBC statement parser
 - [ ] Standard Chartered statement parser
-- [ ] DBS/POSB statement parser
-- [ ] OCBC statement parser
-- [ ] Maybank statement parser
+- [ ] DBS statement parser
+- [ ] AMEX statement parser
+- [ ] YOUTRIP statement parser
+- [ ] REVOLUT statement parser
+- [ ] WISE statement parser
+- [ ] IB statement parser
 - [ ] Auto-detect card type from PDF content (no manual selection needed)
 
 ## Phase 3: Export Formats
 
-- [ ] Export format dropdown (QIF, CSV, and future formats)
+- [ ] Export format dropdown (QIF and CSV, and future formats)
 - [ ] CSV export with configurable column mapping
 - [ ] OFX export (broader accounting software support)
 - [ ] JSON export (for developers / custom pipelines)
