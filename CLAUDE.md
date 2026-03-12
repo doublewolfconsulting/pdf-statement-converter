@@ -55,6 +55,7 @@ pdf-statement-converter/
 | UOB | Absolute Cashback (AMEX) | `uob-absolute` | `ABSOLUTE CASHBACK AMEX` | Multi-card PDF — identifier isolates this card's section |
 | UOB | PRVI Miles (Mastercard) | `uob-privi` | `PRVI MILES MASTERCARD` | Multi-card PDF — identifier isolates this card's section |
 | UOB | Preferred Platinum (Visa) | `uob-preferred` | `PREFERRED PLATINUM VISA` | Multi-card PDF — identifier isolates this card's section |
+| AMEX | KrisFlyer (Singapore Airlines) | `amex-krisflyer` | N/A | Single card per PDF — amounts and descriptions extracted in separate blocks |
 
 ## Coding Standards
 

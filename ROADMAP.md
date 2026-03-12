@@ -20,7 +20,7 @@ Development priorities for PDF Statement Converter. Items are roughly ordered by
 - [ ] HSBC statement parser
 - [ ] Standard Chartered statement parser
 - [ ] DBS statement parser
-- [ ] AMEX statement parser
+- [x] AMEX statement parser
 - [ ] YOUTRIP statement parser
 - [ ] REVOLUT statement parser
 - [ ] WISE statement parser
