@@ -35,14 +35,21 @@ Development priorities for PDF Statement Converter. Items are roughly ordered by
 - [ ] SC Securities Settlement Account parser
 - [ ] HSBC bank account parser
 
-## Phase 4: Export Formats
+## Phase 4: Interactive Brokers Parsers
+
+*(Most complex — multiple statement types, multi-currency, securities transactions)*
+
+- [ ] IB activity statement parser (trades, dividends, interest)
+- [ ] IB cash report parser
+
+## Phase 5: Export Formats
 
 - [ ] Export format dropdown (QIF and CSV, and future formats)
 - [ ] CSV export with configurable column mapping
 - [ ] OFX export (broader accounting software support)
 - [ ] JSON export (for developers / custom pipelines)
 
-## Phase 5: Parsing Quality & UX
+## Phase 6: Parsing Quality & UX
 
 - [ ] Transaction preview table before export (review before download)
 - [ ] Uncategorized transaction highlighting
@@ -51,14 +58,14 @@ Development priorities for PDF Statement Converter. Items are roughly ordered by
 - [ ] Running total / balance validation against statement totals
 - [ ] Drag-and-drop file upload
 
-## Phase 6: Category Management
+## Phase 7: Category Management
 
 - [ ] In-app category editor (add/edit/remove without touching code)
 - [ ] Import/export category rules (share configs between users)
 - [ ] Category suggestions for uncategorized transactions
 - [ ] Per-bank default category mappings
 
-## Phase 7: Deployment & Distribution
+## Phase 8: Deployment & Distribution
 
 - [ ] GitHub Pages hosting
 - [ ] Optional AWS hosting with custom domain
