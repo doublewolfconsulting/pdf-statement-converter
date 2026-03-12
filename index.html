@@ -34,7 +34,63 @@
             border: 2px solid #ddd;
             border-radius: 6px;
             font-size: 16px;
+            font-family: inherit;
         }
+        .custom-select { position: relative; }
+        .custom-select-trigger {
+            width: 100%;
+            padding: 12px 36px 12px 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            font-family: inherit;
+            background: white;
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+        }
+        .custom-select-trigger::after {
+            content: '';
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 0;
+            height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-top: 6px solid #666;
+            pointer-events: none;
+        }
+        .custom-select.open .custom-select-trigger {
+            border-color: #3b82f6;
+            border-radius: 6px 6px 0 0;
+        }
+        .custom-select-options {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 2px solid #3b82f6;
+            border-top: none;
+            border-radius: 0 0 6px 6px;
+            z-index: 100;
+            list-style: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .custom-select.open .custom-select-options { display: block; }
+        .custom-select-options li {
+            padding: 12px;
+            font-size: 16px;
+            font-family: inherit;
+            cursor: pointer;
+            color: #333;
+        }
+        .custom-select-trigger:hover { border-color: #3b82f6; }
+        .custom-select-options li:hover { background: #eff6ff; color: #3b82f6; }
+        .custom-select-options li.selected { color: #3b82f6; font-weight: 600; }
         .upload-area {
             border: 2px dashed #cbd5e0;
             border-radius: 8px;
@@ -118,13 +174,25 @@
         
         <div class="form-group">
             <label>Card Type</label>
-            <select id="cardType" onchange="updateFilename()">
+            <select id="cardType" style="display:none">
                 <option value="citi-smrt">Citi SMRT Platinum Visa</option>
                 <option value="citi-rewards">Citi Rewards World Mastercard</option>
                 <option value="uob-absolute">UOB Absolute Cashback</option>
                 <option value="uob-privi">UOB PRVI Miles</option>
                 <option value="uob-preferred">UOB Preferred Platinum</option>
+                <option value="amex-krisflyer">AMEX KrisFlyer</option>
             </select>
+            <div class="custom-select" id="cardTypeSelect">
+                <div class="custom-select-trigger" id="cardTypeTrigger">Citi SMRT Platinum Visa</div>
+                <ul class="custom-select-options" id="cardTypeOptions">
+                    <li data-value="citi-smrt" class="selected">Citi SMRT Platinum Visa</li>
+                    <li data-value="citi-rewards">Citi Rewards World Mastercard</li>
+                    <li data-value="uob-absolute">UOB Absolute Cashback</li>
+                    <li data-value="uob-privi">UOB PRVI Miles</li>
+                    <li data-value="uob-preferred">UOB Preferred Platinum</li>
+                    <li data-value="amex-krisflyer">AMEX KrisFlyer</li>
+                </ul>
+            </div>
         </div>
 
         <div class="form-group">
@@ -173,12 +241,38 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 
     <!-- Category rules (external config) -->
-    <script src="categories.js"></script>
+    <!-- Use categories.personal.js for your own keywords, or categories.default.js as a starting point -->
+    <script src="categories.personal.js"></script>
 
     <script>
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
         
         let selectedFiles = [];
+
+        // Custom card type dropdown
+        (function () {
+            const wrapper = document.getElementById('cardTypeSelect');
+            const trigger = document.getElementById('cardTypeTrigger');
+            const items   = document.querySelectorAll('#cardTypeOptions li');
+            const hidden  = document.getElementById('cardType');
+
+            trigger.addEventListener('click', () => wrapper.classList.toggle('open'));
+
+            items.forEach(item => {
+                item.addEventListener('click', () => {
+                    hidden.value = item.dataset.value;
+                    trigger.textContent = item.textContent;
+                    items.forEach(i => i.classList.remove('selected'));
+                    item.classList.add('selected');
+                    wrapper.classList.remove('open');
+                    updateFilename();
+                });
+            });
+
+            document.addEventListener('click', e => {
+                if (!wrapper.contains(e.target)) wrapper.classList.remove('open');
+            });
+        })();
 
         // ============================================================
         // Month helpers
@@ -391,6 +485,113 @@
         }
 
         // ============================================================
+        // AMEX KrisFlyer parser
+        // ============================================================
+        // The AMEX PDF renders the amounts column and descriptions column in separate
+        // content streams. Each page's amounts block (isolated decimals + CR markers)
+        // runs from the "XXXX-XXXXXX-" card header line to the "Page N / M" marker.
+        // Transaction description lines (DD.MM.YY DESCRIPTION) appear after the marker.
+        //
+        // CR behaviour: a "CR" line immediately following an amount marks that amount
+        // as a credit (refund/cashback). The very first CR before any amounts in each
+        // page section is a header artifact and must be skipped.
+        //
+        // Dates are DD.MM.YY — year is embedded directly, no cross-year logic needed.
+        function parseAMEXTransactions(text) {
+            const transactions = [];
+            const lines = text.split(/\r?\n/).map(l => l.trim());
+
+            // Convert DD.MM.YY → M/D/YY for QIF
+            function amexFormatDate(ddmmyy) {
+                const [dd, mm, yy] = ddmmyy.split('.');
+                return `${parseInt(mm)}/${parseInt(dd)}/${yy}`;
+            }
+
+            // ── Pass 1: collect transaction description lines ──────────────
+            // Match "DD.MM.YY followed by description text" but not standalone dates
+            // (posting date rows) or header/total lines.
+            const descriptions = [];
+            const txLineRe = /^(\d{2}\.\d{2}\.\d{2})\s+(.+)$/;
+
+            for (const line of lines) {
+                const m = line.match(txLineRe);
+                if (!m) continue;
+                const desc = m[2].trim();
+                // Skip column headers, totals, statement-period dates, "at DD.MM.YYYY" rows
+                if (/^(Details|Total of|From \d|at \d|Prepared)/i.test(desc)) continue;
+                // Skip if "description" starts with a full 4-digit-year date
+                if (/^\d{2}\.\d{2}\.\d{4}/.test(desc)) continue;
+                descriptions.push({ date: m[1], description: desc });
+            }
+
+            // ── Pass 2: collect amounts from the pre-page-marker sections ──
+            // Each page section ends at "Page N / M". Amounts appear before that line.
+            // CR following an amount = credit; first CR in section = leading artifact.
+            // The amounts block for each page runs from the "XXXX-XXXXXX-" card header
+            // line down to the "Page N / M" marker. Amounts that appear elsewhere in
+            // the page (e.g. minimum payment 50.00, opening balance 96.05 in the legal
+            // text) are ignored because inAmountsBlock is false at that point.
+            const amounts = [];
+            let sectionAmounts = [];
+            let inAmountsBlock = false;
+            let leadingCRDone = false;
+
+            for (const line of lines) {
+                // Card header line (e.g. "NAME XXXX-XXXXXX-11000 14.11.2024")
+                // marks the start of this page's amounts block
+                if (/XXXX-XXXXXX-\d+/.test(line)) {
+                    sectionAmounts = [];
+                    inAmountsBlock = true;
+                    leadingCRDone = false;
+                    continue;
+                }
+
+                if (/^Page \d+ \/ \d+$/.test(line)) {
+                    // End of amounts block — flush to main list
+                    for (const a of sectionAmounts) amounts.push(a);
+                    sectionAmounts = [];
+                    inAmountsBlock = false;
+                    leadingCRDone = false;
+                    continue;
+                }
+
+                if (!inAmountsBlock) continue;
+
+                if (/^\d+\.\d{2}$/.test(line)) {
+                    // Isolated decimal amount (no comma — rules out 15,000.00 etc.)
+                    sectionAmounts.push({ value: parseFloat(line), isCredit: false });
+                } else if (line === 'CR') {
+                    if (sectionAmounts.length === 0 && !leadingCRDone) {
+                        // Leading CR artifact — skip
+                        leadingCRDone = true;
+                    } else if (sectionAmounts.length > 0) {
+                        // CR is a suffix for the preceding amount → mark as credit
+                        sectionAmounts[sectionAmounts.length - 1].isCredit = true;
+                    }
+                }
+            }
+
+            // ── Pass 3: pair descriptions with amounts positionally ────────
+            if (descriptions.length !== amounts.length) {
+                console.warn(`AMEX: ${descriptions.length} descriptions but ${amounts.length} amounts — pairing by position up to min`);
+            }
+
+            const count = Math.min(descriptions.length, amounts.length);
+            for (let i = 0; i < count; i++) {
+                const { date, description } = descriptions[i];
+                const { value, isCredit } = amounts[i];
+                transactions.push({
+                    date: amexFormatDate(date),
+                    description,
+                    // Credits (refunds/cashbacks) are positive; purchases are negative
+                    amount: isCredit ? value : -value
+                });
+            }
+
+            return transactions;
+        }
+
+        // ============================================================
         // Parser registry
         // ============================================================
         const PARSERS = {
@@ -434,6 +635,15 @@
                 cardIdentifier: 'PREFERRED PLATINUM VISA',
                 extractYear: extractUOBYear,
                 parseTransactions: parseUOBTransactions
+            },
+            'amex-krisflyer': {
+                name: 'AMEX KrisFlyer',
+                extractYear: (text) => {
+                    // Year is embedded in DD.MM.YY dates — no extraction needed
+                    const m = text.match(/\d{2}\.\d{2}\.(\d{4})/);
+                    return m ? m[1] : '2025';
+                },
+                parseTransactions: parseAMEXTransactions
             }
         };
 
@@ -476,7 +686,8 @@
                 'citi-rewards': 'Citi_Rewards',
                 'uob-absolute': 'UOB_Absolute_Cashback',
                 'uob-privi': 'UOB_PRVI_Miles',
-                'uob-preferred': 'UOB_Preferred_Platinum'
+                'uob-preferred': 'UOB_Preferred_Platinum',
+                'amex-krisflyer': 'AMEX_KrisFlyer'
             };
             document.getElementById('outputFilename').value = filenameMap[cardType] || 'statement';
         }
