@@ -14,6 +14,7 @@ A privacy-first, client-side tool that converts bank and credit card PDF stateme
 | UOB | PRVI Miles (Mastercard) | ✅ Supported |
 | UOB | Preferred Platinum (Visa) | ✅ Supported |
 | AMEX | KrisFlyer (Singapore Airlines) | ✅ Supported |
+| SC | Simply Cash | ✅ Supported |
 
 ## Quick Start
 
