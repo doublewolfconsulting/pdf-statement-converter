@@ -46,7 +46,8 @@ const CATEGORY_RULES = {
     ],
     'Ernährung:Coffee': [
         'MORNING GRIND', 'ALCHEMIST', 'COFFEE', 'ESPRESSO',
-        'ROUND BOY ROASTERS', 'MADROASTER', 'CAFFEINATION', 'KURASU', 'KOPI', 'APARTMENT'
+        'ROUND BOY ROASTERS', 'MADROASTER', 'CAFFEINATION', 'KURASU', 'KOPI', 'APARTMENT',
+        'WORKING TITLE'
     ],
     'Ernährung:Getränke': ['BOOST JUICE'],
     'Ernährung:Foodcourt': [

@@ -182,6 +182,7 @@
                 <option value="uob-preferred">UOB Preferred Platinum</option>
                 <option value="amex-krisflyer">AMEX KrisFlyer</option>
                 <option value="sc-simply-cash">SC Simply Cash</option>
+                <option value="sc-priority">SC Priority Banking Visa Infinite</option>
             </select>
             <div class="custom-select" id="cardTypeSelect">
                 <div class="custom-select-trigger" id="cardTypeTrigger">Citi SMRT Platinum Visa</div>
@@ -193,6 +194,7 @@
                     <li data-value="uob-preferred">UOB Preferred Platinum</li>
                     <li data-value="amex-krisflyer">AMEX KrisFlyer</li>
                     <li data-value="sc-simply-cash">SC Simply Cash</li>
+                    <li data-value="sc-priority">SC Priority Banking Visa Infinite</li>
                 </ul>
             </div>
         </div>
@@ -342,6 +344,17 @@
         // ============================================================
         // Citi parser
         // ============================================================
+        // Citi parser (SMRT Platinum Visa + Rewards World Mastercard)
+        //
+        // Citi statements are single-card PDFs with a simple single-line format:
+        //   DD MON  DESCRIPTION  AMOUNT
+        //
+        // Credits (refunds, payments) use parentheses: (AMOUNT)
+        // Debits are plain amounts.
+        //
+        // Year is read from "Statement Date" in the header. Both Citi card types
+        // share identical transaction formatting, so one parser covers both.
+        // ============================================================
         function parseStandardCitiTransactions(text, year) {
             const transactions = [];
             const lines = text.split(/\r?\n/);
@@ -376,7 +389,20 @@
         }
 
         // ============================================================
-        // UOB parser
+        // UOB parser (Absolute Cashback AMEX + PRVI Miles + Preferred Platinum)
+        //
+        // UOB statements are multi-card PDFs — all cards appear in one file.
+        // Each card's section is identified by a header line (e.g. "ABSOLUTE CASHBACK AMEX").
+        // The parser isolates the target card's section and stops at the next card header.
+        //
+        // Transaction format is two columns (Post Date + Trans Date) followed by description:
+        //   DD MON  DD MON  DESCRIPTION  [AMOUNT [CR]]
+        //
+        // Amount may appear on the same line or on the following line (multi-line layout).
+        // Credits use a "CR" suffix; debits are plain amounts.
+        //
+        // All three UOB card types share identical transaction formatting,
+        // so one parser covers all — cardIdentifier is passed to isolate the section.
         // ============================================================
         function extractUOBStatementInfo(text) {
             const match = text.match(/Statement Date\s+(\d+)\s+([A-Z]{3})\s+(\d{4})/i);
@@ -492,107 +518,21 @@
         }
 
         // ============================================================
-        // Standard Chartered Simply Cash parser
+        // AMEX KrisFlyer parser (Singapore Airlines KrisFlyer credit card)
+        //
+        // AMEX PDFs have a two-column layout that PDF.js extracts separately:
+        // descriptions come out in one block, amounts in another — they cannot
+        // be read as single lines. Strategy is a two-pass positional pairing:
+        //
+        //   Pass 1: collect transaction description lines (DD.MM.YY + description text)
+        //   Pass 2: collect amounts from each page's pre-page-marker block
+        //           (card header "XXXX-XXXXXX-DIGITS" marks the start,
+        //            "Page N / N" marks the end of each page's amounts block)
+        //   Pass 3: pair descriptions with amounts positionally
+        //
+        // Dates use DD.MM.YY format (year embedded — no external year needed).
+        // Credits are followed by a standalone "CR" line.
         // ============================================================
-        // The SC consolidated statement PDF renders transaction data across two sections:
-        //
-        //   PAGE 3 — DESCRIPTION COLUMN:
-        //     "GIRO PAYMENT"  (plain text — credit/cashback posted via GIRO)
-        //     "Transaction Ref XXXXXXXXMERCHANTNAMEHERE"  (ref digits concatenated with merchant)
-        //
-        //   PAGE 4 — DATE + AMOUNT COLUMNS:
-        //     "DD Mon  DD Mon  Amount[CR]"  (transaction date, posting date, amount)
-        //
-        // Savings account rows use "DD Mon YYYY Description..." (4-digit year) so they
-        // don't collide with the credit card "DD Mon DD Mon Amount" pattern.
-        //
-        // Descriptions and amounts are paired positionally. Any amount row without a
-        // matching description (e.g. the GIRO bank deduction at end) gets "GIRO PAYMENT".
-        // Transaction date (first date on the row) is used, consistent with other parsers.
-        function parseSCSimplyCashTransactions(text) {
-            const transactions = [];
-            const lines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l);
-
-            // Statement date: "Statement Date: 15 Mar 2025"
-            const stmtMatch = text.match(/Statement Date:\s+(\d{1,2})\s+(\w{3})\s+(\d{4})/i);
-            const statementYear = stmtMatch ? stmtMatch[3] : '2025';
-            const stmtMonthNum = stmtMatch ? (MONTHS[stmtMatch[2].toUpperCase()] || 1) : 1;
-
-            // Convert "DD" + "Mon" to QIF format M/D/YY with cross-year detection
-            function scFormatDate(day, mon) {
-                const d = parseInt(day);
-                const m = MONTHS[mon.substring(0, 3).toUpperCase()] || 1;
-                // If transaction month is much later than statement month → previous year
-                // e.g. December transactions in a January statement
-                let year = statementYear;
-                if (m > stmtMonthNum + 6) year = String(parseInt(statementYear) - 1);
-                return `${m}/${d}/${year.slice(2)}`;
-            }
-
-            // ── Pass 1: Collect descriptions ──────────────────────────────────
-            // Find first "Transaction Ref" line, look back up to 20 lines for a
-            // standalone "GIRO PAYMENT", then collect all Transaction Ref lines.
-            const descriptions = [];
-            let firstTxRefIdx = -1;
-            for (let i = 0; i < lines.length; i++) {
-                if (/^Transaction Ref\s+\d+/.test(lines[i])) { firstTxRefIdx = i; break; }
-            }
-            if (firstTxRefIdx >= 0) {
-                for (let i = Math.max(0, firstTxRefIdx - 20); i < firstTxRefIdx; i++) {
-                    // Exact match only — avoids "5498-34XX-XXXX-4769 GIRO PAYMENT" in header
-                    if (lines[i] === 'GIRO PAYMENT') descriptions.push('GIRO PAYMENT');
-                }
-                for (let i = firstTxRefIdx; i < lines.length; i++) {
-                    const m = lines[i].match(/^Transaction Ref\s+\d+(.+)$/);
-                    if (m) descriptions.push(m[1].trim());
-                }
-            }
-
-            // ── Pass 2: Collect transaction rows (date + amount) ──────────────
-            // Pattern "DD Mon DD Mon Amount[CR]" is unique to credit card sections.
-            // Savings rows use "DD Mon YYYY Description..." and don't match.
-            const MON = 'Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec';
-            const txRowRe = new RegExp(
-                `^(\\d{1,2})\\s+(${MON})\\s+\\d{1,2}\\s+(?:${MON})\\s+([\\d,]+\\.\\d{2})(CR)?\\s*$`, 'i'
-            );
-            const amountRows = [];
-            for (const line of lines) {
-                const m = line.match(txRowRe);
-                if (!m) continue;
-                amountRows.push({
-                    date: scFormatDate(m[1], m[2]),
-                    value: parseFloat(m[3].replace(/,/g, '')),
-                    isCredit: m[4] !== undefined
-                });
-            }
-
-            // ── Pass 3: Pair descriptions with amounts positionally ───────────
-            for (let i = 0; i < amountRows.length; i++) {
-                const { date, value, isCredit } = amountRows[i];
-                const description = i < descriptions.length ? descriptions[i] : 'GIRO PAYMENT';
-                transactions.push({
-                    date,
-                    description,
-                    amount: isCredit ? value : -value
-                });
-            }
-
-            return transactions;
-        }
-
-        // ============================================================
-        // AMEX KrisFlyer parser
-        // ============================================================
-        // The AMEX PDF renders the amounts column and descriptions column in separate
-        // content streams. Each page's amounts block (isolated decimals + CR markers)
-        // runs from the "XXXX-XXXXXX-" card header line to the "Page N / M" marker.
-        // Transaction description lines (DD.MM.YY DESCRIPTION) appear after the marker.
-        //
-        // CR behaviour: a "CR" line immediately following an amount marks that amount
-        // as a credit (refund/cashback). The very first CR before any amounts in each
-        // page section is a header artifact and must be skipped.
-        //
-        // Dates are DD.MM.YY — year is embedded directly, no cross-year logic needed.
         function parseAMEXTransactions(text) {
             const transactions = [];
             const lines = text.split(/\r?\n/).map(l => l.trim());
@@ -604,8 +544,6 @@
             }
 
             // ── Pass 1: collect transaction description lines ──────────────
-            // Match "DD.MM.YY followed by description text" but not standalone dates
-            // (posting date rows) or header/total lines.
             const descriptions = [];
             const txLineRe = /^(\d{2}\.\d{2}\.\d{2})\s+(.+)$/;
 
@@ -621,12 +559,6 @@
             }
 
             // ── Pass 2: collect amounts from the pre-page-marker sections ──
-            // Each page section ends at "Page N / M". Amounts appear before that line.
-            // CR following an amount = credit; first CR in section = leading artifact.
-            // The amounts block for each page runs from the "XXXX-XXXXXX-" card header
-            // line down to the "Page N / M" marker. Amounts that appear elsewhere in
-            // the page (e.g. minimum payment 50.00, opening balance 96.05 in the legal
-            // text) are ignored because inAmountsBlock is false at that point.
             const amounts = [];
             let sectionAmounts = [];
             let inAmountsBlock = false;
@@ -688,6 +620,173 @@
         }
 
         // ============================================================
+        // Standard Chartered parser (Simply Cash + Priority Banking Visa Infinite)
+        //
+        // SC PDFs have a 4-column table (Trans Date | Post Date | Description | Amount).
+        // PDF.js extracts the Description column separately from the date/amount columns,
+        // and in reverse order relative to them. Structure per page:
+        //   [description lines — reverse order]
+        //   [column header noise]
+        //   [DD Mon  DD Mon  AMOUNT[CR] rows — forward order]
+        //
+        // Strategy: state machine collects descriptions then date/amount rows per page.
+        // On each page boundary, reverse descriptions and pair positionally with date/amounts.
+        //
+        // Description formats:
+        //   Standard:  Transaction Ref DIGITS MERCHANT CITY SG
+        //   Alternate: MERCHANT CITY SG Transaction Ref DIGITS  (some PDF versions)
+        //   No ref:    GIRO PAYMENT, CASHBACK
+        // ============================================================
+        // Known SC card identifiers — used to detect section boundaries
+        const ALL_SC_CARDS = ['SIMPLY CASH CREDIT CARD', 'PRIORITY BANKING VISA INFINITE'];
+
+        function scExtractYear(text) {
+            // SC PDF concatenates date and label: "16 Oct 2024Statement Date:"
+            const reversed = text.match(/(\d{1,2})\s+\w{3}\s+(\d{4})\s*Statement\s+Date/i);
+            if (reversed) return reversed[2];
+            const forward = text.match(/Statement\s+Date\s*:?\s*\d{1,2}\s+\w{3}\s+(\d{4})/i);
+            return forward ? forward[1] : '2025';
+        }
+
+        function parseSCTransactions(text, year, cardIdentifier) {
+            const transactions = [];
+            const lines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l);
+            let inCardSection  = false;
+            // Exit when any other SC card's section is encountered
+            const otherSCCards = ALL_SC_CARDS.filter(c => c !== cardIdentifier);
+
+            const monthRe = '(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)';
+            // Matches: DD Mon  DD Mon  AMOUNT[CR]  — captures transaction date, amount, optional CR
+            const dateAmountRe = new RegExp(
+                `^(\\d{1,2}\\s+${monthRe})\\s+\\d{1,2}\\s+${monthRe}\\s+([\\d,]+\\.\\d{2})(CR)?\\s*$`, 'i'
+            );
+            // No-ref descriptions (no Transaction Ref on the line)
+            const descSpecialRe = /^(GIRO PAYMENT|CASHBACK)$/i;
+
+            // Statement date for cross-year detection
+            // SC PDF concatenates date and label: "16 Oct 2024Statement Date:" — try reversed first
+            const stmtMatch    = text.match(/(\d{1,2})\s+(\w{3})\s+(\d{4})\s*Statement\s+Date/i)
+                               || text.match(/Statement\s+Date\s*:?\s*(\d{1,2})\s+(\w{3})\s+(\d{4})/i);
+            const statementYear = stmtMatch ? stmtMatch[3] : year;
+            const stmtMonthNum  = stmtMatch ? (MONTHS[stmtMatch[2].toUpperCase()] || 1) : 1;
+
+            let descBuffer      = [];
+            let dateAmountBuffer = [];
+            let inDateBlock     = false;
+
+            function extractDescription(line) {
+                // Skip balance-forward rows — not real transactions
+                if (/BALANCE.*PREVIOUS|PREVIOUS.*BALANCE/i.test(line)) return null;
+
+                // Search for "Transaction Ref" (flexible spacing) within the line
+                const txRefIdx = line.search(/Transaction\s+Ref/i);
+                if (txRefIdx > 0) {
+                    // Standard: MERCHANT ... CITY SG Transaction Ref DIGITS
+                    // Strip "Transaction Ref DIGITS" and trailing CITY SG
+                    const beforeRef = line.substring(0, txRefIdx).trim();
+                    return beforeRef.replace(/\s+\S+\s+SG\s*$/i, '').trim();
+                }
+                if (/^Transaction\s+Ref/i.test(line)) {
+                    // Standard SC format: Transaction Ref DIGITS MERCHANT CITY SG
+                    return line.replace(/^Transaction\s+Ref\s+\d+\s*/i, '')
+                               .replace(/\s+\S+\s+SG\s*$/i, '').trim();
+                }
+                // No-ref: GIRO PAYMENT, CASHBACK, etc.
+                if (descSpecialRe.test(line)) return line.trim();
+                return null;
+            }
+
+            function flushSection() {
+                if (!descBuffer.length && !dateAmountBuffer.length) return;
+                const reversed = [...descBuffer].reverse();
+                if (reversed.length !== dateAmountBuffer.length) {
+                    console.warn(`SC: ${reversed.length} descriptions vs ${dateAmountBuffer.length} date/amount rows — pairing up to min`);
+                }
+                const count = Math.min(reversed.length, dateAmountBuffer.length);
+                for (let i = 0; i < count; i++) {
+                    const { dateStr, amount, isCredit } = dateAmountBuffer[i];
+                    // Cross-year: transaction in Dec on a Jan statement → previous year
+                    const txMonthNum = MONTHS[dateStr.trim().split(/\s+/)[1].toUpperCase()] || 1;
+                    const txYear     = txMonthNum > stmtMonthNum + 6
+                        ? String(parseInt(statementYear) - 1)
+                        : statementYear;
+                    transactions.push({
+                        date:        formatDate(dateStr, txYear),
+                        description: reversed[i],
+                        amount:      isCredit ? amount : -amount
+                    });
+                }
+                descBuffer      = [];
+                dateAmountBuffer = [];
+            }
+
+            for (const line of lines) {
+                // Card section entry — ignore everything before the card identifier
+                if (!inCardSection) {
+                    if (line.includes(cardIdentifier)) inCardSection = true;
+                    continue;
+                }
+
+                // Card section exit — stop when another known SC card's section is encountered.
+                // If no amounts collected yet it's a false start in the account summary —
+                // reset and wait for the real transaction-page entry.
+                if (otherSCCards.some(other => line.includes(other))) {
+                    if (dateAmountBuffer.length > 0 || inDateBlock) break;
+                    inCardSection    = false;
+                    descBuffer       = [];
+                    dateAmountBuffer = [];
+                    inDateBlock      = false;
+                    continue;
+                }
+
+                const dateAmountMatch = line.match(dateAmountRe);
+
+                if (dateAmountMatch) {
+                    inDateBlock = true;
+                    const amount = parseFloat(dateAmountMatch[2].replace(/,/g, ''));
+                    if (amount === 0) continue; // skip balance-forward rows
+                    dateAmountBuffer.push({
+                        dateStr:  dateAmountMatch[1],
+                        amount,
+                        isCredit: !!dateAmountMatch[3]
+                    });
+                    continue;
+                }
+
+                if (inDateBlock) {
+                    // Non-date line while in date block — check if it's a new page's descriptions
+                    const desc = extractDescription(line);
+                    if (desc !== null) {
+                        flushSection();
+                        inDateBlock = false;
+                        descBuffer.push(desc);
+                    }
+                    // Otherwise: column header noise — skip
+                    continue;
+                }
+
+                // Description collection phase
+                const desc = extractDescription(line);
+                if (desc !== null) descBuffer.push(desc);
+            }
+
+            flushSection();
+            return transactions;
+        }
+
+        // ============================================================
+        // Standard Chartered Priorty Visa parser
+        // ============================================================
+
+        // ============================================================
+        // HSBC Advance parser
+        // ============================================================
+
+        // ============================================================
+        // HSBC Resvolution parser
+        // ============================================================
+
+        // ============================================================
         // Parser registry
         // ============================================================
         const PARSERS = {
@@ -743,11 +842,15 @@
             },
             'sc-simply-cash': {
                 name: 'SC Simply Cash',
-                extractYear: (text) => {
-                    const m = text.match(/Statement Date:\s+\d{1,2}\s+\w{3}\s+(\d{4})/i);
-                    return m ? m[1] : '2025';
-                },
-                parseTransactions: parseSCSimplyCashTransactions
+                cardIdentifier: 'SIMPLY CASH CREDIT CARD',
+                extractYear: scExtractYear,
+                parseTransactions: parseSCTransactions
+            },
+            'sc-priority': {
+                name: 'SC Priority Banking Visa Infinite',
+                cardIdentifier: 'PRIORITY BANKING VISA INFINITE',
+                extractYear: scExtractYear,
+                parseTransactions: parseSCTransactions
             }
         };
 
@@ -792,7 +895,8 @@
                 'uob-privi': 'UOB_PRVI_Miles',
                 'uob-preferred': 'UOB_Preferred_Platinum',
                 'amex-krisflyer': 'AMEX_KrisFlyer',
-                'sc-simply-cash': 'SC_Simply_Cash'
+                'sc-simply-cash': 'SC_Simply_Cash',
+                'sc-priority': 'SC_Priority_Banking'
             };
             document.getElementById('outputFilename').value = filenameMap[cardType] || 'statement';
         }

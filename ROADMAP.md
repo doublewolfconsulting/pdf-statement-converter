@@ -19,7 +19,7 @@ Development priorities for PDF Statement Converter. Items are roughly ordered by
 
 - [x] AMEX KrisFlyer parser
 - [x] SC Simply Cash parser
-- [ ] SC Priority Banking Visa Infinite parser
+- [x] SC Priority Banking Visa Infinite parser
 - [ ] HSBC credit card parser
 - [ ] DBS credit card parser
 - [ ] YOUTRIP parser
@@ -64,6 +64,7 @@ Development priorities for PDF Statement Converter. Items are roughly ordered by
 - [ ] Import/export category rules (share configs between users)
 - [ ] Category suggestions for uncategorized transactions
 - [ ] Per-bank default category mappings
+- [ ] Amount-based categorization rules (e.g. merchant X: <$6 → coffee, otherwise restaurant)
 
 ## Phase 8: Deployment & Distribution
 
