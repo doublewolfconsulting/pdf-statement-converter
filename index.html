@@ -286,6 +286,14 @@
             JUL: 7, AUG: 8, SEP: 9, OCT: 10, NOV: 11, DEC: 12
         };
 
+        // Last-resort year extraction — scans for any 20XX year in the document
+        function fallbackYear(text) {
+            const m = text.match(/\b(20\d{2})\b/);
+            if (m) return m[1];
+            console.warn('Could not extract year from statement — check the PDF');
+            return String(new Date().getFullYear());
+        }
+
         function formatDate(dateStr, year) {
             const [day, monthStr] = dateStr.trim().split(/\s+/);
             const month = MONTHS[monthStr.toUpperCase()];
@@ -406,7 +414,7 @@
         // ============================================================
         function extractUOBStatementInfo(text) {
             const match = text.match(/Statement Date\s+(\d+)\s+([A-Z]{3})\s+(\d{4})/i);
-            if (!match) return { statementYear: '2025', stmtMonthNum: 1 };
+            if (!match) return { statementYear: fallbackYear(text), stmtMonthNum: 1 };
 
             const [, , monthStr, year] = match;
             const stmtMonthNum = MONTHS[monthStr.toUpperCase()] || 1;
@@ -645,7 +653,7 @@
             const reversed = text.match(/(\d{1,2})\s+\w{3}\s+(\d{4})\s*Statement\s+Date/i);
             if (reversed) return reversed[2];
             const forward = text.match(/Statement\s+Date\s*:?\s*\d{1,2}\s+\w{3}\s+(\d{4})/i);
-            return forward ? forward[1] : '2025';
+            return forward ? forward[1] : fallbackYear(text);
         }
 
         function parseSCTransactions(text, year, cardIdentifier) {
@@ -775,10 +783,6 @@
         }
 
         // ============================================================
-        // Standard Chartered Priorty Visa parser
-        // ============================================================
-
-        // ============================================================
         // HSBC Advance parser
         // ============================================================
 
@@ -794,7 +798,7 @@
                 name: 'Citi SMRT Platinum Visa',
                 extractYear: (text) => {
                     const match = text.match(/Statement Date\s+\w+\s+\d+,?\s+(\d{4})/i);
-                    return match ? match[1] : '2025';
+                    return match ? match[1] : fallbackYear(text);
                 },
                 parseTransactions: parseStandardCitiTransactions
             },
@@ -809,7 +813,7 @@
                         const earlyMonths = ['JANUARY', 'FEBRUARY', 'MARCH'];
                         return earlyMonths.includes(month.toUpperCase()) ? String(parseInt(year) - 1) : year;
                     }
-                    return '2025';
+                    return fallbackYear(text);
                 },
                 parseTransactions: parseStandardCitiTransactions
             },
@@ -836,7 +840,7 @@
                 extractYear: (text) => {
                     // Year is embedded in DD.MM.YY dates — no extraction needed
                     const m = text.match(/\d{2}\.\d{2}\.(\d{4})/);
-                    return m ? m[1] : '2025';
+                    return m ? m[1] : fallbackYear(text);
                 },
                 parseTransactions: parseAMEXTransactions
             },
