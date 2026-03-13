@@ -19,18 +19,19 @@
 const CATEGORY_RULES = {
     // --- Transport ---
     'Fahrtkosten:Bus & MRT': ['BUS/MRT', 'BUS', 'MRT'],
-    'Fahrtkosten:Taxi': ['GOJEK', 'RYDE'],
+    'Fahrtkosten:Taxi': ['GOJEK', 'RYDE', 'GRAB', 'TADA'],
     'Fahrtkosten:Bike': ['HELLORIDE'],
 
     // --- Vehicle ---
     'Fahrzeuge:Parkgebühren': ['PARKING'],
     'Fahrzeuge:Benzin': ['SPC', 'SINGAPORE PETROLEUM'],
     'Fahrzeuge:TÜV': ['VICOM'],
+    'Fahrzeuge:Steuer': ['LTA E-SERVICE', 'LTA ESERVICE'],
 
     // --- Food & Drink ---
     'Ernährung:Groceries': [
         'SHENG SIONG', 'FAIRPRICE', 'COLD STORAGE', 'NTUC', 'GIANT',
-        'GERMANMARKETPLACE', 'REDMART', '7-ELEVEN', 'AMAZON RETAIL'
+        'GERMANMARKETPLACE', 'REDMART', '7-ELEVEN', 'AMAZON RETAIL', 'AFRICAN MARKETP'
     ],
     'Ernährung:Restaurants': [
         'SUBWAY', 'RESTAURANT', 'FOOD', 'TACO', 'YOSHINOYA', 'AN LA GHIEN',
@@ -40,11 +41,13 @@ const CATEGORY_RULES = {
         'STUFF', 'MERCI MARCEL', 'LOTUS NGUYEN', 'KAZBAR', 'SPIZZA',
         'KEBAB', 'MCDONALD', 'ENSEEDS', 'CO CHUNG', 'PPUNCH', 'SUSHI BAR',
         'WARMUPCAFE', 'OPERETTA CORNER BAR', 'AUTHENTIC THAI',
-        'MEXICAN FOOD CORP', 'BROTZEIT', 'SUSHI-TEI', 'AYAMPRESIDENT'
+        'MEXICAN FOOD CORP', 'BROTZEIT', 'SUSHI-TEI', 'AYAMPRESIDENT',
+        'NOBU', 'IZAKAYA', 'MANGIAMO', "DELI'S KITCHEN", 'D.O.P'
     ],
     'Ernährung:Coffee': [
         'MORNING GRIND', 'ALCHEMIST', 'COFFEE', 'ESPRESSO',
-        'ROUND BOY ROASTERS', 'MADROASTER', 'CAFFEINATION', 'KURASU'
+        'ROUND BOY ROASTERS', 'MADROASTER', 'CAFFEINATION', 'KURASU', 'KOPI', 'APARTMENT',
+        'WORKING TITLE'
     ],
     'Ernährung:Getränke': ['BOOST JUICE'],
     'Ernährung:Foodcourt': [
@@ -63,9 +66,9 @@ const CATEGORY_RULES = {
     'Friseur': ['JEAN YIP'],
 
     // --- Health ---
-    'Krankheitskost.:Arzt': ['PARKWAY DENTAL', 'SEOW-CHOEN COLORECTA', 'TOOFDOCTOR'],
+    'Krankheitskost.:Arzt': ['PARKWAY DENTAL', 'SEOW-CHOEN COLORECT', 'TOOFDOCTOR', 'ORCHARD SURGERY', 'RADLINK', 'THE VASCULAR'],
     'Krankheitskost.:Physio': ['CALIBRATE HEALTH'],
-    'Krankheitskost.:Medikamente': ["WATSON'S"],
+    'Krankheitskost.:Medikamente': ["WATSON'S", 'GUARDIAN'],
 
     // --- Housing & Utilities ---
     'Nebenk. Wohnung:Telefon': ['GOMO MOBILE'],
@@ -76,11 +79,13 @@ const CATEGORY_RULES = {
     'Pets:Food': ['PET LOVERS'],
 
     // --- Leisure ---
-    'Freizeit:Drinks': ['DRUGGISTS', 'KULT KAFE', 'BREWERKZ', 'HARRY', 'MORTAR AND PESTLE', 'BAR NKD'],
+    'Freizeit:Drinks': ['DRUGGISTS', 'KULT KAFE', 'BREWERKZ', 'HARRY', 'MORTAR AND PESTLE', 'BAR NKD', 'LION BREWERY', 'BLU JAZ', 'GULPBEER', 'SWISS CLUB', 'ONE LEVELUP'],
     'Freizeit:Kino': ['THEATRES'],
     'Freizeit:Sport': ['SUPERBOWL'],
+    'Freizeit:Gym': ['F45'],
     'Freizeit:Massage': ['NATURELAND'],
 
     // --- Travel ---
-    'Reise:Hotelkosten': ['ALOFT', 'HOTEL']
+    'Reise:Hotelkosten': ['ALOFT', 'HOTEL'],
+    'Reise:Pass und Visas': ['MOM*']
 };
