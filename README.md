@@ -6,17 +6,18 @@ A privacy-first, client-side tool that converts bank and credit card PDF stateme
 
 ## Supported Cards
 
-| Bank | Card | Status |
-| ------ | ------ | -------- |
-| Citi | SMRT Platinum Visa | ✅ Supported |
-| Citi | Rewards World Mastercard | ✅ Supported |
-| UOB | Absolute Cashback (AMEX) | ✅ Supported |
-| UOB | PRVI Miles (Mastercard) | ✅ Supported |
-| UOB | Preferred Platinum (Visa) | ✅ Supported |
-| AMEX | KrisFlyer (Singapore Airlines) | ✅ Supported |
-| SC | Simply Cash | ✅ Supported |
-| HSBC | Advance | ✅ Supported (requires OCR pre-processing via `ocrmypdf`) |
-| HSBC | Revolution | ✅ Supported (requires OCR pre-processing via `ocrmypdf`) |
+| Bank | Card | Type | Status | Notes |
+| ------ | ------ | ------ | -------- | ----- |
+| Citi | SMRT Platinum | Visa | ✅ Supported | |
+| Citi | Rewards World | Mastercard | ✅ Supported | |
+| UOB | Absolute Cashback | AMEX | ✅ Supported | |
+| UOB | PRVI Miles | Mastercard | ✅ Supported | |
+| UOB | Preferred Platinum | Visa | ✅ Supported | |
+| AMEX | KrisFlyer (Singapore Airlines) | AMEX | ✅ Supported | |
+| SC | Simply Cash | Mastercard | ✅ Supported | |
+| SC | Priority Banking Visa Infinite | Visa | ✅ Supported | |
+| HSBC | Advance | Visa | ✅ Supported | Requires OCR pre-processing — run `preprocess.sh` first |
+| HSBC | Revolution | Visa | ✅ Supported | Requires OCR pre-processing — run `preprocess.sh` first |
 
 ## Quick Start
 
@@ -25,6 +26,21 @@ A privacy-first, client-side tool that converts bank and credit card PDF stateme
 3. Select your card type, upload your PDF statement(s), and click Convert
 
 That's it — no build step, no server, no dependencies to install.
+
+### Pre-processing scanned PDFs (HSBC)
+
+HSBC statements are scanned images with no embedded text. Run `preprocess.sh` to add an OCR text layer before converting:
+
+```bash
+# Install once
+brew install ocrmypdf
+
+# Pre-process one or more statements
+./preprocess.sh statement.pdf
+./preprocess.sh ~/Downloads/hsbc/*.pdf
+```
+
+The script outputs `*_ocr.pdf` files alongside the originals. Upload those to the converter.
 
 ### Alternative: GitHub Pages
 
@@ -42,6 +58,7 @@ If you fork this repo, you can enable GitHub Pages in your repo settings (Settin
 ``` text
 pdf-statement-converter/
 ├── index.html                # Main application (open this in your browser)
+├── preprocess.sh             # OCR helper for scanned PDFs (HSBC)
 ├── categories.default.js     # Default English categories — copy this to get started
 ├── categories.personal.js    # Personal categories — loaded by default
 ├── README.md                 # This file
