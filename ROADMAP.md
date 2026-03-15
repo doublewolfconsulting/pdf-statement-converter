@@ -20,7 +20,7 @@ Development priorities for PDF Statement Converter. Items are roughly ordered by
 - [x] AMEX KrisFlyer parser
 - [x] SC Simply Cash parser
 - [ ] SC Priority Banking Visa Infinite parser
-- [ ] HSBC credit card parser
+- [x] HSBC Advance credit card parser (requires `ocrmypdf` pre-processing)
 - [ ] DBS credit card parser
 - [ ] YOUTRIP parser
 - [ ] REVOLUT parser
