@@ -21,6 +21,7 @@ Development priorities for PDF Statement Converter. Items are roughly ordered by
 - [x] SC Simply Cash parser
 - [ ] SC Priority Banking Visa Infinite parser
 - [x] HSBC Advance credit card parser (requires `ocrmypdf` pre-processing)
+- [x] HSBC Revolution credit card parser (requires `ocrmypdf` pre-processing)
 - [ ] DBS credit card parser
 - [ ] YOUTRIP parser
 - [ ] REVOLUT parser
@@ -28,7 +29,7 @@ Development priorities for PDF Statement Converter. Items are roughly ordered by
 
 ## Phase 3: Bank Account Parsers
 
-*(Requires QIF account type research — deferred until Phase 2 is complete)*
+Requires QIF account type research — deferred until Phase 2 is complete.
 
 - [ ] SC eSaver account parser
 - [ ] SC Bonus$aver account parser
@@ -37,7 +38,7 @@ Development priorities for PDF Statement Converter. Items are roughly ordered by
 
 ## Phase 4: Interactive Brokers Parsers
 
-*(Most complex — multiple statement types, multi-currency, securities transactions)*
+Most complex — multiple statement types, multi-currency, securities transactions.
 
 - [ ] IB activity statement parser (trades, dividends, interest)
 - [ ] IB cash report parser

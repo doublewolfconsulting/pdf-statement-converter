@@ -16,6 +16,7 @@ A privacy-first, client-side tool that converts bank and credit card PDF stateme
 | AMEX | KrisFlyer (Singapore Airlines) | ✅ Supported |
 | SC | Simply Cash | ✅ Supported |
 | HSBC | Advance | ✅ Supported (requires OCR pre-processing via `ocrmypdf`) |
+| HSBC | Revolution | ✅ Supported (requires OCR pre-processing via `ocrmypdf`) |
 
 ## Quick Start
 

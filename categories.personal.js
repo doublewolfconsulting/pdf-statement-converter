@@ -26,6 +26,7 @@ const CATEGORY_RULES = {
     'Fahrzeuge:Parkgebühren': ['PARKING'],
     'Fahrzeuge:Benzin': ['SPC', 'SINGAPORE PETROLEUM'],
     'Fahrzeuge:TÜV': ['VICOM'],
+    'Fahrzeuge:Inspektion': ['YAMAHA'],
     'Fahrzeuge:Steuer': ['LTA E-SERVICE', 'LTA ESERVICE', 'VR20'],
 
     // --- Food & Drink ---
@@ -34,6 +35,7 @@ const CATEGORY_RULES = {
         'GERMANMARKETPLACE', 'REDMART', '7-ELEVEN', 'AMAZON RETAIL', 'AFRICAN MARKETP'
     ],
     'Ernährung:Restaurants': [
+        'PASTE & CO', 'HUSHIRO',
         'SUBWAY', 'RESTAURANT', 'FOOD', 'TACO', 'YOSHINOYA', 'AN LA GHIEN',
         'GYG', 'OMOTE', 'PIZZERIA', 'PIZZA', 'ROLLIE OLIE', 'BANGKOK JAM',
         'WOK HEY', 'MRS PHO', 'HAI DI LAO', "THAI'D ME UP", 'OH SOME BOWLS',
@@ -79,12 +81,15 @@ const CATEGORY_RULES = {
     'Pets:Food': ['PET LOVERS'],
 
     // --- Leisure ---
-    'Freizeit:Drinks': ['DRUGGISTS', 'KULT KAFE', 'BREWERKZ', 'HARRY', 'MORTAR AND PESTLE', 'BAR NKD', 'LION BREWERY', 'BLU JAZ', 'GULPBEER', 'SWISS CLUB', 'ONE LEVELUP', 'THIRSTY BEER'],
+    'Freizeit:Drinks': ['DRUGGISTS', 'KULT KAFE', 'BREWERKZ', 'HARRY', 'MORTAR AND PESTLE', 'BAR NKD', 'LION BREWERY', 'BLU JAZ', 'GULPBEER', 'SWISS CLUB', 'ONE LEVELUP', 'THIRSTY BEER', 'JIBIRU', 'ALLEY BAR', 'EMERALD HILL'],
     'Freizeit:Kino': ['THEATRES', 'GOLDEN VILLAGE'],
     'Freizeit:Gym': ['F45'],
     'Freizeit:Massage': ['NATURELAND'],
+    'Freizeit:Wellness': ['WELLNESS RESET', 'REVA SOCIAL'],
 
     // --- Travel ---
     'Reise:Hotelkosten': ['ALOFT', 'HOTEL'],
-    'Reise:Pass und Visas': ['MOM*']
+    'Reise:Pass und Visas': ['MOM*'],
+    // TODO: double-check — Klook sells many things (tours, eSIMs, activities); may need splitting
+    'Reise:Telefon': ['KLOOK'],
 };
