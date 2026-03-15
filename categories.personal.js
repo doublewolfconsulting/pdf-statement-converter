@@ -26,6 +26,7 @@ const CATEGORY_RULES = {
     'Fahrzeuge:Parkgebühren': ['PARKING'],
     'Fahrzeuge:Benzin': ['SPC', 'SINGAPORE PETROLEUM'],
     'Fahrzeuge:TÜV': ['VICOM'],
+    'Fahrzeuge:Inspektion': ['YAMAHA'],
     'Fahrzeuge:Steuer': ['LTA E-SERVICE', 'LTA ESERVICE', 'VR20'],
 
     // --- Food & Drink ---
@@ -83,8 +84,11 @@ const CATEGORY_RULES = {
     'Freizeit:Kino': ['THEATRES', 'GOLDEN VILLAGE'],
     'Freizeit:Gym': ['F45'],
     'Freizeit:Massage': ['NATURELAND'],
+    'Freizeit:Wellness': ['WELLNESS RESET', 'REVA SOCIAL'],
 
     // --- Travel ---
     'Reise:Hotelkosten': ['ALOFT', 'HOTEL'],
-    'Reise:Pass und Visas': ['MOM*']
+    'Reise:Pass und Visas': ['MOM*'],
+    // TODO: double-check — Klook sells many things (tours, eSIMs, activities); may need splitting
+    'Reise:Telefon': ['KLOOK'],
 };
