@@ -26,7 +26,7 @@ const CATEGORY_RULES = {
     'Fahrzeuge:Parkgebühren': ['PARKING'],
     'Fahrzeuge:Benzin': ['SPC', 'SINGAPORE PETROLEUM'],
     'Fahrzeuge:TÜV': ['VICOM'],
-    'Fahrzeuge:Steuer': ['LTA E-SERVICE', 'LTA ESERVICE'],
+    'Fahrzeuge:Steuer': ['LTA E-SERVICE', 'LTA ESERVICE', 'VR20'],
 
     // --- Food & Drink ---
     'Ernährung:Groceries': [
@@ -58,9 +58,9 @@ const CATEGORY_RULES = {
     // --- Payments & Banking ---
     '[SG-HSBC-Premier]': ['GIRO PAYMENT', 'PAYMENT', 'THANK YOU'],
     '[SG-YouTrip-SGD]': ['YOUTRIP'],
-    'Kreditkartenkosten': ['ANNUAL MEMBER FEE', 'MEMBERSHIP FEE', 'GST ON MEMBERSHIP', 'CARD ANNUAL FEE', 'GST', 'REVERSAL GST', 'REFUND OF CARD ANNUAL FEE'],
+    'Kreditkartenkosten': ['ANNUAL MEMBER FEE', 'MEMBERSHIP FEE', 'GST ON MEMBERSHIP', 'CARD ANNUAL FEE', 'GST', 'REVERSAL GST', 'REFUND OF CARD ANNUAL FEE', 'ANNUAL FEE CREDIT'],
     'Zinseinkünfte': ['CR INTEREST'],
-    'Cashback': ['UOB ABSOLUTE CASHBACK', 'CASHBACK'],
+    'Cashback': ['UOB ABSOLUTE CASHBACK', 'CASHBACK', 'CASH BACK'],
 
     // --- Personal Care ---
     'Friseur': ['JEAN YIP'],
@@ -79,9 +79,8 @@ const CATEGORY_RULES = {
     'Pets:Food': ['PET LOVERS'],
 
     // --- Leisure ---
-    'Freizeit:Drinks': ['DRUGGISTS', 'KULT KAFE', 'BREWERKZ', 'HARRY', 'MORTAR AND PESTLE', 'BAR NKD', 'LION BREWERY', 'BLU JAZ', 'GULPBEER', 'SWISS CLUB', 'ONE LEVELUP'],
-    'Freizeit:Kino': ['THEATRES'],
-    'Freizeit:Sport': ['SUPERBOWL'],
+    'Freizeit:Drinks': ['DRUGGISTS', 'KULT KAFE', 'BREWERKZ', 'HARRY', 'MORTAR AND PESTLE', 'BAR NKD', 'LION BREWERY', 'BLU JAZ', 'GULPBEER', 'SWISS CLUB', 'ONE LEVELUP', 'THIRSTY BEER'],
+    'Freizeit:Kino': ['THEATRES', 'GOLDEN VILLAGE'],
     'Freizeit:Gym': ['F45'],
     'Freizeit:Massage': ['NATURELAND'],
 
