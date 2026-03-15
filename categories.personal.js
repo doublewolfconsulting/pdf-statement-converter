@@ -35,6 +35,7 @@ const CATEGORY_RULES = {
         'GERMANMARKETPLACE', 'REDMART', '7-ELEVEN', 'AMAZON RETAIL', 'AFRICAN MARKETP'
     ],
     'Ernährung:Restaurants': [
+        'PASTE & CO', 'HUSHIRO',
         'SUBWAY', 'RESTAURANT', 'FOOD', 'TACO', 'YOSHINOYA', 'AN LA GHIEN',
         'GYG', 'OMOTE', 'PIZZERIA', 'PIZZA', 'ROLLIE OLIE', 'BANGKOK JAM',
         'WOK HEY', 'MRS PHO', 'HAI DI LAO', "THAI'D ME UP", 'OH SOME BOWLS',
@@ -80,7 +81,7 @@ const CATEGORY_RULES = {
     'Pets:Food': ['PET LOVERS'],
 
     // --- Leisure ---
-    'Freizeit:Drinks': ['DRUGGISTS', 'KULT KAFE', 'BREWERKZ', 'HARRY', 'MORTAR AND PESTLE', 'BAR NKD', 'LION BREWERY', 'BLU JAZ', 'GULPBEER', 'SWISS CLUB', 'ONE LEVELUP', 'THIRSTY BEER'],
+    'Freizeit:Drinks': ['DRUGGISTS', 'KULT KAFE', 'BREWERKZ', 'HARRY', 'MORTAR AND PESTLE', 'BAR NKD', 'LION BREWERY', 'BLU JAZ', 'GULPBEER', 'SWISS CLUB', 'ONE LEVELUP', 'THIRSTY BEER', 'JIBIRU', 'ALLEY BAR', 'EMERALD HILL'],
     'Freizeit:Kino': ['THEATRES', 'GOLDEN VILLAGE'],
     'Freizeit:Gym': ['F45'],
     'Freizeit:Massage': ['NATURELAND'],
