@@ -4,20 +4,30 @@ A privacy-first, client-side tool that converts bank and credit card PDF stateme
 
 **All processing happens in your browser. No financial data is ever sent to a server or stored anywhere.**
 
-## Supported Cards
+## Supported Statements
+
+### Credit Cards
 
 | Bank | Card | Type | Status | Notes |
 | ------ | ------ | ------ | -------- | ----- |
-| Citi | SMRT Platinum | Visa | ✅ Supported | |
-| Citi | Rewards World | Mastercard | ✅ Supported | |
+| Citibank | SMRT Platinum | Visa | ✅ Supported | |
+| Citibank | Rewards World | Mastercard | ✅ Supported | |
 | UOB | Absolute Cashback | AMEX | ✅ Supported | |
 | UOB | PRVI Miles | Mastercard | ✅ Supported | |
 | UOB | Preferred Platinum | Visa | ✅ Supported | |
 | AMEX | KrisFlyer (Singapore Airlines) | AMEX | ✅ Supported | |
-| SC | Simply Cash | Mastercard | ✅ Supported | |
-| SC | Priority Banking Visa Infinite | Visa | ✅ Supported | |
+| Standard Chartered | Simply Cash | Mastercard | ✅ Supported | |
+| Standard Chartered | Priority Banking Visa Infinite | Visa | ✅ Supported | |
 | HSBC | Advance | Visa | ✅ Supported | Requires OCR pre-processing — run `preprocess.sh` first |
 | HSBC | Revolution | Visa | ✅ Supported | Requires OCR pre-processing — run `preprocess.sh` first |
+
+### Bank Accounts
+
+| Bank | Account | Status | Notes |
+| ------ | ------ | -------- | ----- |
+| Standard Chartered | Securities Settlement Account | ✅ Supported | |
+| Standard Chartered | Bonus$aver | ✅ Supported | |
+| Standard Chartered | Unlimited$aver | ✅ Supported | |
 
 ## Quick Start
 
@@ -58,6 +68,7 @@ If you fork this repo, you can enable GitHub Pages in your repo settings (Settin
 ``` text
 pdf-statement-converter/
 ├── index.html                # Main application (open this in your browser)
+├── styles.css                # Stylesheet for index.html
 ├── preprocess.sh             # OCR helper for scanned PDFs (HSBC)
 ├── categories.default.js     # Default English categories — copy this to get started
 ├── categories.personal.js    # Personal categories — loaded by default
