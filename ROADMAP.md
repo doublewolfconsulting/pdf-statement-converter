@@ -31,15 +31,14 @@ Development priorities for PDF Statement Converter. Items are roughly ordered by
 
 Requires QIF account type research — deferred until Phase 2 is complete.
 
-- [ ] SC bank account parser (eSaver, Bonus$aver, Securities Settlement Account)
+- [ ] SC bank account parser
 - [ ] HSBC bank account parser
 
 ## Phase 4: Interactive Brokers Parsers
 
 Most complex — multiple statement types, multi-currency, securities transactions.
 
-- [ ] IB activity statement parser (trades, dividends, interest)
-- [ ] IB cash report parser
+- [ ] Interactive Brokers statement parser
 
 ## Phase 5: Export Formats
 
