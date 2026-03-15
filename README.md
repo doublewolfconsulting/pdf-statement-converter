@@ -27,6 +27,21 @@ A privacy-first, client-side tool that converts bank and credit card PDF stateme
 
 That's it — no build step, no server, no dependencies to install.
 
+### Pre-processing scanned PDFs (HSBC)
+
+HSBC statements are scanned images with no embedded text. Run `preprocess.sh` to add an OCR text layer before converting:
+
+```bash
+# Install once
+brew install ocrmypdf
+
+# Pre-process one or more statements
+./preprocess.sh statement.pdf
+./preprocess.sh ~/Downloads/hsbc/*.pdf
+```
+
+The script outputs `*_ocr.pdf` files alongside the originals. Upload those to the converter.
+
 ### Alternative: GitHub Pages
 
 If you fork this repo, you can enable GitHub Pages in your repo settings (Settings → Pages → Source: main branch) to get a hosted version at `https://<your-username>.github.io/pdf-statement-converter/`.
@@ -43,6 +58,7 @@ If you fork this repo, you can enable GitHub Pages in your repo settings (Settin
 ``` text
 pdf-statement-converter/
 ├── index.html                # Main application (open this in your browser)
+├── preprocess.sh             # OCR helper script for scanned PDFs (HSBC)
 ├── categories.default.js     # Default English categories — copy this to get started
 ├── categories.personal.js    # Personal categories — loaded by default
 ├── README.md                 # This file
