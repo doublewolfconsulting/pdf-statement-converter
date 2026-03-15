@@ -4,168 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PDF Statement Converter</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
-            background: #f5f5f5;
-            padding: 20px;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        h1 { margin-bottom: 10px; color: #333; }
-        .subtitle { color: #666; margin-bottom: 30px; }
-        .form-group { margin-bottom: 25px; }
-        label { 
-            display: block; 
-            font-weight: 600; 
-            margin-bottom: 8px;
-            color: #333;
-        }
-        input[type="number"], input[type="text"], select {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #ddd;
-            border-radius: 6px;
-            font-size: 16px;
-            font-family: inherit;
-        }
-        .custom-select { position: relative; }
-        .custom-select-trigger {
-            width: 100%;
-            padding: 12px 36px 12px 12px;
-            border: 2px solid #ddd;
-            border-radius: 6px;
-            font-size: 16px;
-            font-family: inherit;
-            background: white;
-            cursor: pointer;
-            user-select: none;
-            position: relative;
-        }
-        .custom-select-trigger::after {
-            content: '';
-            position: absolute;
-            right: 14px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 0;
-            height: 0;
-            border-left: 5px solid transparent;
-            border-right: 5px solid transparent;
-            border-top: 6px solid #666;
-            pointer-events: none;
-        }
-        .custom-select.open .custom-select-trigger {
-            border-color: #3b82f6;
-            border-radius: 6px 6px 0 0;
-        }
-        .custom-select-options {
-            display: none;
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: white;
-            border: 2px solid #3b82f6;
-            border-top: none;
-            border-radius: 0 0 6px 6px;
-            z-index: 100;
-            list-style: none;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-        .custom-select.open .custom-select-options { display: block; }
-        .custom-select-options li {
-            padding: 12px;
-            font-size: 16px;
-            font-family: inherit;
-            cursor: pointer;
-            color: #333;
-        }
-        .custom-select-trigger:hover { border-color: #3b82f6; }
-        .custom-select-options li:hover { background: #eff6ff; color: #3b82f6; }
-        .custom-select-options li.selected { color: #3b82f6; font-weight: 600; }
-        .upload-area {
-            border: 2px dashed #cbd5e0;
-            border-radius: 8px;
-            padding: 40px;
-            text-align: center;
-            background: #f8fafc;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        .upload-area:hover {
-            border-color: #3b82f6;
-            background: #eff6ff;
-        }
-        .upload-area input[type="file"] { display: none; }
-        .upload-icon { font-size: 48px; color: #9ca3af; margin-bottom: 10px; }
-        .upload-text { color: #3b82f6; font-weight: 600; margin-bottom: 5px; }
-        .upload-hint { color: #6b7280; font-size: 14px; }
-        .file-list {
-            margin-top: 15px;
-            padding: 15px;
-            background: #dbeafe;
-            border-radius: 6px;
-        }
-        .file-list strong { color: #1e40af; }
-        button {
-            width: 100%;
-            padding: 15px;
-            background: #3b82f6;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        button:hover { background: #2563eb; }
-        button:disabled { background: #9ca3af; cursor: not-allowed; }
-        .error {
-            padding: 15px;
-            background: #fee2e2;
-            border: 2px solid #ef4444;
-            border-radius: 6px;
-            color: #991b1b;
-            margin-bottom: 20px;
-        }
-        .output-section { margin-top: 30px; }
-        .output-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        .download-btn { width: auto; padding: 10px 20px; background: #10b981; }
-        .download-btn:hover { background: #059669; }
-        textarea {
-            width: 100%;
-            height: 300px;
-            padding: 15px;
-            border: 2px solid #ddd;
-            border-radius: 6px;
-            font-family: monospace;
-            font-size: 13px;
-            background: #f9fafb;
-        }
-        .info {
-            margin-top: 20px;
-            padding: 15px;
-            background: #dbeafe;
-            border: 1px solid #93c5fd;
-            border-radius: 6px;
-            font-size: 14px;
-            color: #1e40af;
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
@@ -175,22 +14,30 @@
         <div class="form-group">
             <label>Card Type</label>
             <select id="cardType" style="display:none">
-                <option value="citi-smrt">Citi SMRT Platinum Visa</option>
-                <option value="citi-rewards">Citi Rewards World Mastercard</option>
-                <option value="uob-absolute">UOB Absolute Cashback</option>
-                <option value="uob-privi">UOB PRVI Miles</option>
-                <option value="uob-preferred">UOB Preferred Platinum</option>
-                <option value="amex-krisflyer">AMEX KrisFlyer</option>
-                <option value="sc-simply-cash">SC Simply Cash</option>
-                <option value="sc-priority-banking">SC Priority Banking Visa Infinite</option>
-                <option value="hsbc-advance">HSBC Advance</option>
-                <option value="hsbc-revolution">HSBC Revolution</option>
+                <optgroup label="Credit Cards">
+                    <option value="citi-smrt">Citibank SMRT Platinum Visa</option>
+                    <option value="citi-rewards">Citibank Rewards World Mastercard</option>
+                    <option value="uob-absolute">UOB Absolute Cashback</option>
+                    <option value="uob-privi">UOB PRVI Miles</option>
+                    <option value="uob-preferred">UOB Preferred Platinum</option>
+                    <option value="amex-krisflyer">AMEX KrisFlyer</option>
+                    <option value="sc-simply-cash">SC Simply Cash</option>
+                    <option value="sc-priority-banking">SC Priority Banking Visa Infinite</option>
+                    <option value="hsbc-advance">HSBC Advance</option>
+                    <option value="hsbc-revolution">HSBC Revolution</option>
+                </optgroup>
+                <optgroup label="Bank Accounts">
+                    <option value="sc-securities-settlement">SC Securities Settlement Account</option>
+                    <option value="sc-bonussaver">SC Bonus$aver</option>
+                    <option value="sc-unlimitedsaver">SC Unlimited$aver</option>
+                </optgroup>
             </select>
             <div class="custom-select" id="cardTypeSelect">
-                <div class="custom-select-trigger" id="cardTypeTrigger">Citi SMRT Platinum Visa</div>
+                <div class="custom-select-trigger" id="cardTypeTrigger">Citibank SMRT Platinum Visa</div>
                 <ul class="custom-select-options" id="cardTypeOptions">
-                    <li data-value="citi-smrt" class="selected">Citi SMRT Platinum Visa</li>
-                    <li data-value="citi-rewards">Citi Rewards World Mastercard</li>
+                    <li class="group-header">Credit Cards</li>
+                    <li data-value="citi-smrt" class="selected">Citibank SMRT Platinum Visa</li>
+                    <li data-value="citi-rewards">Citibank Rewards World Mastercard</li>
                     <li data-value="uob-absolute">UOB Absolute Cashback</li>
                     <li data-value="uob-privi">UOB PRVI Miles</li>
                     <li data-value="uob-preferred">UOB Preferred Platinum</li>
@@ -199,6 +46,10 @@
                     <li data-value="sc-priority-banking">SC Priority Banking Visa Infinite</li>
                     <li data-value="hsbc-advance">HSBC Advance</li>
                     <li data-value="hsbc-revolution">HSBC Revolution</li>
+                    <li class="group-header">Bank Accounts</li>
+                    <li data-value="sc-securities-settlement">SC Securities Settlement Account</li>
+                    <li data-value="sc-bonussaver">SC Bonus$aver</li>
+                    <li data-value="sc-unlimitedsaver">SC Unlimited$aver</li>
                 </ul>
             </div>
         </div>
@@ -268,6 +119,7 @@
 
             items.forEach(item => {
                 item.addEventListener('click', () => {
+                    if (item.classList.contains('group-header')) return;
                     hidden.value = item.dataset.value;
                     trigger.textContent = item.textContent;
                     items.forEach(i => i.classList.remove('selected'));
@@ -713,6 +565,7 @@
         // ============================================================
         // Known SC card identifiers — used to detect section boundaries
         const ALL_SC_CARDS = ['SIMPLY CASH CREDIT CARD', 'PRIORITY BANKING VISA INFINITE'];
+        const ALL_SC_BANK_ACCOUNTS = ['SECURITIES SETTLEMENT ACCOUNT', 'Bonus$aver', 'UNLIMITED$AVER'];
 
         function scExtractYear(text) {
             // Coordinate extraction gives clean line: "Statement Date: 15 Mar 2025"
@@ -781,6 +634,72 @@
             }
 
             console.log(`[SC ${cardIdentifier}] ${transactions.length} transactions parsed`);
+            return transactions;
+        }
+
+        // ============================================================
+        // Standard Chartered — Bank Account parser
+        // ============================================================
+        // Row format (coordinate extraction): DD Mon YYYY  DESCRIPTION  [DEPOSIT]  [WITHDRAWAL]  BALANCE
+        // Sign is inferred from balance delta: balance up → deposit (+), balance down → withdrawal (-)
+        function parseSCBankTransactions(text, _year, accountIdentifier) {
+            const lines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l);
+            const transactions = [];
+            let inSection = false;
+            let prevBalance = null;
+
+            const monthRe = '(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)';
+            const dateRe = new RegExp(`^(\\d{1,2}\\s+${monthRe}\\s+\\d{4})\\s+(.+)$`, 'i');
+            const skipRe = /BALANCE FROM PREVIOUS STATEMENT|CLOSING BALANCE|^Date\s+Description/i;
+            // Standalone reference numbers that appear on their own line (e.g. 217838301)
+            const refNumRe = /^\d{6,}$/;
+            // Account number pattern e.g. 71-0-996310-2 — used to detect section boundaries
+            const acctHeaderRe = /\d{2}-\d-\d{6}-\d/;
+
+            for (const line of lines) {
+                if (!inSection) {
+                    if (line.includes(accountIdentifier)) inSection = true;
+                    continue;
+                }
+
+                // Another account section encountered — false start (still in summary) or real stop
+                if (acctHeaderRe.test(line) || ALL_SC_CARDS.some(c => line.includes(c))) {
+                    if (transactions.length > 0) break;
+                    inSection = false;
+                    continue;
+                }
+
+                if (skipRe.test(line) || refNumRe.test(line)) continue;
+
+                const m = line.match(dateRe);
+                if (!m) continue;
+
+                const [, dateStr, rest] = m;
+                const amounts = [...rest.matchAll(/([\d,]+\.\d{2})/g)].map(a => parseFloat(a[0].replace(/,/g, '')));
+                if (amounts.length < 2) continue; // need txn amount + balance at minimum
+
+                const balance = amounts[amounts.length - 1];
+                const txnAmount = amounts[0];
+                if (txnAmount === 0) continue;
+
+                // Positive if balance increased (deposit), negative if decreased (withdrawal)
+                const isDeposit = prevBalance === null || balance >= prevBalance;
+                prevBalance = balance;
+
+                // Description is everything before the first amount
+                const desc = rest.replace(/\s+[\d,]+\.\d{2}.*$/, '').trim();
+                if (!desc) continue;
+
+                // Date is DD Mon YYYY — split off year for formatDate(DD Mon, YYYY)
+                const parts = dateStr.trim().split(/\s+/); // [DD, Mon, YYYY]
+                transactions.push({
+                    date: formatDate(`${parts[0]} ${parts[1]}`, parts[2]),
+                    description: desc,
+                    amount: isDeposit ? txnAmount : -txnAmount
+                });
+            }
+
+            console.log(`[SC ${accountIdentifier}] ${transactions.length} transactions parsed`);
             return transactions;
         }
 
@@ -915,6 +834,30 @@
                 extractYear: scExtractYear,
                 parseTransactions: parseSCTransactions
             },
+            'sc-securities-settlement': {
+                name: 'SC Securities Settlement Account',
+                cardIdentifier: 'SECURITIES SETTLEMENT ACCOUNT',
+                coordinateExtraction: true,
+                qifType: 'Bank',
+                extractYear: scExtractYear,
+                parseTransactions: parseSCBankTransactions
+            },
+            'sc-bonussaver': {
+                name: 'SC Bonus$aver',
+                cardIdentifier: 'Bonus$aver',
+                coordinateExtraction: true,
+                qifType: 'Bank',
+                extractYear: scExtractYear,
+                parseTransactions: parseSCBankTransactions
+            },
+            'sc-unlimitedsaver': {
+                name: 'SC Unlimited$aver',
+                cardIdentifier: 'UNLIMITED$AVER',
+                coordinateExtraction: true,
+                qifType: 'Bank',
+                extractYear: scExtractYear,
+                parseTransactions: parseSCBankTransactions
+            },
             'hsbc-advance': {
                 name: 'HSBC Advance',
                 extractYear: hsbcExtractYear,
@@ -930,8 +873,8 @@
         // ============================================================
         // QIF generation
         // ============================================================
-        function generateQIF(transactions, startNum) {
-            let qif = '!Option:MDY\n!Type:CCard\n';
+        function generateQIF(transactions, startNum, type = 'CCard') {
+            let qif = `!Option:MDY\n!Type:${type}\n`;
             let num = startNum;
             transactions.forEach(txn => {
                 qif += `D${txn.date}\nU${txn.amount.toFixed(2)}\nT${txn.amount.toFixed(2)}\nCX\nN${num}\nP${txn.description}\n`;
@@ -971,6 +914,9 @@
                 'amex-krisflyer': 'AMEX_KrisFlyer',
                 'sc-simply-cash': 'SC_Simply_Cash',
                 'sc-priority-banking': 'SC_Priority_Banking',
+                'sc-securities-settlement': 'SC_Securities_Settlement',
+                'sc-bonussaver': 'SC_BonusSaver',
+                'sc-unlimitedsaver': 'SC_UnlimitedSaver',
                 'hsbc-advance': 'HSBC_Advance',
                 'hsbc-revolution': 'HSBC_Revolution',
             };
@@ -1050,7 +996,7 @@
                     console.log(`   ${cat}: ${count} transactions`);
                 });
                 
-                const qif = generateQIF(allTransactions, startingNumber);
+                const qif = generateQIF(allTransactions, startingNumber, PARSERS[cardType].qifType || 'CCard');
                 qifOutput.value = qif;
                 transactionCount.textContent = `Generated ${allTransactions.length} transactions`;
                 outputSection.style.display = 'block';

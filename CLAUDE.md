@@ -24,6 +24,7 @@ pdf-statement-converter/
 ├── LICENSE            # PolyForm Noncommercial License 1.0.0
 ├── .gitignore         # Blocks *.pdf, *.qif, *.csv — never commit financial data
 ├── index.html         # Main application (UI + parsers + QIF generation)
+├── styles.css         # Stylesheet for index.html
 └── categories.personal.js  # Category rules for auto-classification (external config)
 ```
 
@@ -46,16 +47,30 @@ pdf-statement-converter/
 - **One parser per bank/card format.** Each parser is a standalone function registered in the `PARSERS` object. Parsers should never share mutable state.
 - **Pre-sorted output.** Transactions are sorted by date after parsing, before QIF generation.
 
-## Supported Cards
+## Supported Statements
+
+### Credit Cards
 
 | Bank | Card | Parser Key | Card Identifier | Notes |
 | ---- | ---- | ---------- | --------------- | ----- |
-| Citi | SMRT Platinum Visa | `citi-smrt` | N/A | One card per PDF — no section isolation needed |
-| Citi | Rewards World Mastercard | `citi-rewards` | N/A | One card per PDF — no section isolation needed |
+| Citibank | SMRT Platinum Visa | `citi-smrt` | N/A | One card per PDF — no section isolation needed |
+| Citibank | Rewards World Mastercard | `citi-rewards` | N/A | One card per PDF — no section isolation needed |
 | UOB | Absolute Cashback (AMEX) | `uob-absolute` | `ABSOLUTE CASHBACK AMEX` | Multi-card PDF — identifier isolates this card's section |
 | UOB | PRVI Miles (Mastercard) | `uob-privi` | `PRVI MILES MASTERCARD` | Multi-card PDF — identifier isolates this card's section |
 | UOB | Preferred Platinum (Visa) | `uob-preferred` | `PREFERRED PLATINUM VISA` | Multi-card PDF — identifier isolates this card's section |
 | AMEX | KrisFlyer (Singapore Airlines) | `amex-krisflyer` | N/A | Single card per PDF — amounts and descriptions extracted in separate blocks; paired positionally |
+| Standard Chartered | Simply Cash | `sc-simply-cash` | `SIMPLY CASH CREDIT CARD` | Consolidated PDF — coordinate extraction; section isolation |
+| Standard Chartered | Priority Banking Visa Infinite | `sc-priority-banking` | `PRIORITY BANKING VISA INFINITE` | Consolidated PDF — coordinate extraction; section isolation |
+| HSBC | Advance | `hsbc-advance` | N/A | Scanned PDF — requires `ocrmypdf` pre-processing via `preprocess.sh` |
+| HSBC | Revolution | `hsbc-revolution` | N/A | Scanned PDF — requires `ocrmypdf` pre-processing via `preprocess.sh` |
+
+### Bank Accounts
+
+| Bank | Account | Parser Key | Account Identifier | Notes |
+| ---- | ------- | ---------- | ------------------ | ----- |
+| Standard Chartered | Securities Settlement Account | `sc-securities-settlement` | `SECURITIES SETTLEMENT ACCOUNT` | Consolidated PDF — coordinate extraction; `!Type:Bank` QIF output |
+| Standard Chartered | Bonus$aver | `sc-bonussaver` | `Bonus$aver` | Consolidated PDF — coordinate extraction; `!Type:Bank` QIF output |
+| Standard Chartered | Unlimited$aver | `sc-unlimitedsaver` | `UNLIMITED$AVER` | Consolidated PDF — coordinate extraction; `!Type:Bank` QIF output |
 
 ## Coding Standards
 
@@ -64,15 +79,15 @@ pdf-statement-converter/
 - **Console logging** is intentional. Conversion logs card type, transaction counts, date ranges, and category breakdowns to the browser console for debugging.
 - **Comments for parsing logic.** Bank statement formats are quirky — document why regex patterns exist, not just what they do.
 
-## Adding a New Card Parser
+## Adding a New Parser
 
 1. Study the bank's PDF statement format (upload a PDF, check browser console for extracted text)
-2. Create a parser function following the pattern of `parseStandardCitiTransactions` (single-line) or `parseUOBTransactions` (multi-line with card section isolation)
+2. Create a parser function following the pattern of `parseStandardCitiTransactions` (single-line), `parseUOBTransactions` (multi-line with card section isolation), or `parseSCBankTransactions` (bank account with deposit/withdrawal/balance columns)
 3. Handle year detection — watch out for cross-year statements (e.g., January statement with December transactions)
-4. Register the parser in the `PARSERS` object with `name`, `extractYear`, `parseTransactions`, and optionally `cardIdentifier`
-5. Add the card option to both the hidden `<select id="cardType">` and the `<ul id="cardTypeOptions">` custom dropdown in `index.html`
+4. Register the parser in the `PARSERS` object with `name`, `extractYear`, `parseTransactions`, and optionally `cardIdentifier`, `coordinateExtraction: true`, and `qifType: 'Bank'`
+5. Add the option to both the hidden `<select id="cardType">` and the `<ul id="cardTypeOptions">` custom dropdown — place under the correct `<optgroup>` / group header (`Credit Cards` or `Bank Accounts`)
 6. Add the filename mapping in `updateFilename()`
-7. Update this file's Supported Cards table
+7. Update this file's Supported Statements table
 
 ## Category Files
 
@@ -99,8 +114,10 @@ Format:
 - **UOB multi-line transactions:** Amount appears on a separate line from description. The parser uses a `currentTransaction` state machine to handle this.
 - **UOB multi-card statements:** A single PDF contains sections for multiple cards. Parser uses `cardIdentifier` to isolate the correct section and stops at the next card header.
 - **Cross-year transactions:** A January 2026 statement may contain December 2025 transactions. Year detection compares transaction month against statement month.
-- **Citi Rewards year detection:** Falls back to Payment Due Date if Statement Date is missing.
-- **Credit vs debit:** Citi uses parentheses `(amount)` for credits. UOB uses `CR` suffix.
+- **Citibank Rewards year detection:** Falls back to Payment Due Date if Statement Date is missing.
+- **Credit vs debit:** Citibank uses parentheses `(amount)` for credits. UOB uses `CR` suffix. Standard Chartered bank accounts use separate Deposit/Withdrawal columns — sign inferred from balance delta.
+- **Standard Chartered consolidated PDF:** A single PDF contains all accounts (bank + credit cards). Coordinate-based extraction (`coordinateExtraction: true`) reconstructs rows correctly. Section isolation uses `cardIdentifier` with false-start reset logic to skip the account summary at the top.
+- **HSBC scanned PDFs:** No embedded text layer — require `ocrmypdf` pre-processing via `preprocess.sh` before uploading.
 
 ## Git Workflow
 

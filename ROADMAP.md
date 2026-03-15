@@ -28,9 +28,9 @@ Development priorities for PDF Statement Converter. Items are roughly ordered by
 
 ## Phase 3: Bank Account Parsers
 
-Requires QIF account type research — deferred until Phase 2 is complete.
-
-- [ ] Standard Chartered bank account parser
+- [x] Standard Chartered Securities Settlement Account parser
+- [x] Standard Chartered Bonus$aver parser
+- [x] Standard Chartered Unlimited$aver parser
 - [ ] HSBC bank account parser
 
 ## Phase 4: Interactive Brokers Parsers
