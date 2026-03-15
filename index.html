@@ -182,6 +182,7 @@
                 <option value="uob-preferred">UOB Preferred Platinum</option>
                 <option value="amex-krisflyer">AMEX KrisFlyer</option>
                 <option value="sc-simply-cash">SC Simply Cash</option>
+                <option value="hsbc-advance">HSBC Advance</option>
             </select>
             <div class="custom-select" id="cardTypeSelect">
                 <div class="custom-select-trigger" id="cardTypeTrigger">Citi SMRT Platinum Visa</div>
@@ -193,6 +194,7 @@
                     <li data-value="uob-preferred">UOB Preferred Platinum</li>
                     <li data-value="amex-krisflyer">AMEX KrisFlyer</li>
                     <li data-value="sc-simply-cash">SC Simply Cash</li>
+                    <li data-value="hsbc-advance">HSBC Advance</li>
                 </ul>
             </div>
         </div>
@@ -783,9 +785,68 @@
         // ============================================================
         // HSBC Advance parser
         // ============================================================
+        // Format: single-line transactions
+        //   DD MMM DD MMM DESCRIPTION AMOUNT(CR)?
+        //   (post date, tran date, description, amount)
+        // Credits (cashback, payments) have CR suffix.
+        // Continuation lines (merchant location, year) are non-matching noise — ignored.
+        // Year extracted from statement period header: "From DD MMM YYYY to DD MMM YYYY"
+        // Underscores in OCR output replaced with spaces in descriptions.
+        // ============================================================
+        function hsbcAdvanceExtractYear(text) {
+            // "From 08 JUL 2025 to 07 AUG 2025" — use end date year
+            const m = text.match(/to\s+\d{1,2}\s+\w{3}\s+(\d{4})/i)
+                   || text.match(/From\s+\d{1,2}\s+\w{3}\s+(\d{4})/i);
+            return m ? m[1] : fallbackYear(text);
+        }
+
+        function parseHSBCAdvanceTransactions(text, year) {
+            const transactions = [];
+            const lines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l);
+
+            // Statement period end date gives year and month for cross-year detection
+            const periodMatch = text.match(/to\s+\d{1,2}\s+(\w{3})\s+(\d{4})/i);
+            const stmtYear     = periodMatch ? periodMatch[2] : year;
+            const stmtMonthNum = periodMatch ? (MONTHS[periodMatch[1].toUpperCase()] || 1) : 1;
+
+            const monthRe = '(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)';
+            // POST DATE  TRAN DATE  DESCRIPTION  AMOUNT(CR)?
+            const txnRe = new RegExp(
+                `^(\\d{1,2}\\s+${monthRe})\\s+\\d{1,2}\\s+${monthRe}\\s+(.+?)\\s+([\\d,]+\\.\\d{2})(CR)?\\s*$`, 'i'
+            );
+
+            for (const line of lines) {
+                // Stop before account summary section to avoid false matches
+                if (/ACCOUNT SUMMARY/i.test(line)) break;
+
+                const m = line.match(txnRe);
+                if (!m) continue;
+
+                const amount = parseFloat(m[3].replace(/,/g, ''));
+                if (amount === 0) continue;
+
+                const dateStr     = m[1];
+                const description = m[2].trim().replace(/_/g, ' ');
+                const isCredit    = !!m[4];
+
+                // Cross-year detection: if tx month is much later than stmt month, it's prior year
+                const txMonthNum = MONTHS[dateStr.trim().split(/\s+/)[1].toUpperCase()] || 1;
+                const txYear = txMonthNum > stmtMonthNum + 6
+                    ? String(parseInt(stmtYear) - 1) : stmtYear;
+
+                transactions.push({
+                    date: formatDate(dateStr, txYear),
+                    description,
+                    amount: isCredit ? amount : -amount
+                });
+            }
+
+            console.log(`[HSBC Advance] ${transactions.length} transactions parsed`);
+            return transactions;
+        }
 
         // ============================================================
-        // HSBC Resvolution parser
+        // HSBC Revolution parser
         // ============================================================
 
         // ============================================================
@@ -848,6 +909,11 @@
                 extractYear: scExtractYear,
                 parseTransactions: parseSCTransactions
             },
+            'hsbc-advance': {
+                name: 'HSBC Advance',
+                extractYear: hsbcAdvanceExtractYear,
+                parseTransactions: parseHSBCAdvanceTransactions
+            },
         };
 
         // ============================================================
@@ -892,6 +958,7 @@
                 'uob-preferred': 'UOB_Preferred_Platinum',
                 'amex-krisflyer': 'AMEX_KrisFlyer',
                 'sc-simply-cash': 'SC_Simply_Cash',
+                'hsbc-advance': 'HSBC_Advance',
             };
             document.getElementById('outputFilename').value = filenameMap[cardType] || 'statement';
         }

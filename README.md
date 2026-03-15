@@ -15,6 +15,7 @@ A privacy-first, client-side tool that converts bank and credit card PDF stateme
 | UOB | Preferred Platinum (Visa) | ✅ Supported |
 | AMEX | KrisFlyer (Singapore Airlines) | ✅ Supported |
 | SC | Simply Cash | ✅ Supported |
+| HSBC | Advance | ✅ Supported (requires OCR pre-processing via `ocrmypdf`) |
 
 ## Quick Start
 

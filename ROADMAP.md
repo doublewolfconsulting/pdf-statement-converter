@@ -20,7 +20,7 @@ Development priorities for PDF Statement Converter. Items are roughly ordered by
 - [x] AMEX KrisFlyer parser
 - [x] SC Simply Cash parser
 - [ ] SC Priority Banking Visa Infinite parser
-- [ ] HSBC credit card parser
+- [x] HSBC Advance credit card parser (requires `ocrmypdf` pre-processing)
 - [ ] DBS credit card parser
 - [ ] YOUTRIP parser
 - [ ] REVOLUT parser
@@ -51,6 +51,7 @@ Development priorities for PDF Statement Converter. Items are roughly ordered by
 
 ## Phase 6: Parsing Quality & UX
 
+- [ ] Rewrite `extractTextFromPDF` to reconstruct rows by Y/X coordinate grouping — eliminates fragile two-buffer pairing in SC parser and simplifies any future multi-column statement parsers
 - [ ] Transaction preview table before export (review before download)
 - [ ] Uncategorized transaction highlighting
 - [ ] Manual category override in preview
