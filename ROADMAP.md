@@ -31,9 +31,7 @@ Development priorities for PDF Statement Converter. Items are roughly ordered by
 
 Requires QIF account type research — deferred until Phase 2 is complete.
 
-- [ ] SC eSaver account parser
-- [ ] SC Bonus$aver account parser
-- [ ] SC Securities Settlement Account parser
+- [ ] SC bank account parser (eSaver, Bonus$aver, Securities Settlement Account)
 - [ ] HSBC bank account parser
 
 ## Phase 4: Interactive Brokers Parsers
