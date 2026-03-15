@@ -182,6 +182,7 @@
                 <option value="uob-preferred">UOB Preferred Platinum</option>
                 <option value="amex-krisflyer">AMEX KrisFlyer</option>
                 <option value="sc-simply-cash">SC Simply Cash</option>
+                <option value="sc-priority-banking">SC Priority Banking Visa Infinite</option>
                 <option value="hsbc-advance">HSBC Advance</option>
                 <option value="hsbc-revolution">HSBC Revolution</option>
             </select>
@@ -195,6 +196,7 @@
                     <li data-value="uob-preferred">UOB Preferred Platinum</li>
                     <li data-value="amex-krisflyer">AMEX KrisFlyer</li>
                     <li data-value="sc-simply-cash">SC Simply Cash</li>
+                    <li data-value="sc-priority-banking">SC Priority Banking Visa Infinite</li>
                     <li data-value="hsbc-advance">HSBC Advance</li>
                     <li data-value="hsbc-revolution">HSBC Revolution</li>
                 </ul>
@@ -319,6 +321,16 @@
         // ============================================================
         // PDF text extraction (client-side via PDF.js)
         // ============================================================
+        // Two extraction modes — chosen per parser via coordinateExtraction flag:
+        //
+        // extractTextFromPDF (default): processes items in PDF content stream order.
+        //   Works well for single-column statements (Citi, UOB, AMEX, HSBC).
+        //
+        // extractTextFromPDFByCoordinates: groups items by Y coordinate (visual row),
+        //   sorts each row left-to-right by X. Correctly reconstructs multi-column
+        //   layouts where PDF.js emits columns separately (e.g. SC statements).
+        //   Set coordinateExtraction: true in a parser to use this method.
+        // ============================================================
         async function extractTextFromPDF(file) {
             const arrayBuffer = await file.arrayBuffer();
             const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
@@ -343,6 +355,57 @@
                 });
                 if (currentLine) fullText += currentLine.trim() + '\n';
             }
+            // Log in chunks to avoid console truncation
+            const chunkSize = 3000;
+            for (let i = 0; i < fullText.length; i += chunkSize) {
+                console.log(`=== RAW TEXT [${i}–${Math.min(i + chunkSize, fullText.length)}] ===\n` + fullText.slice(i, i + chunkSize));
+            }
+            return fullText;
+        }
+
+        async function extractTextFromPDFByCoordinates(file) {
+            const arrayBuffer = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+            let fullText = '';
+            const Y_TOLERANCE = 3; // points — items within this Y range are the same row
+
+            for (let i = 1; i <= pdf.numPages; i++) {
+                const page = await pdf.getPage(i);
+                const textContent = await page.getTextContent();
+
+                const rows = []; // [{y, items: [{x, text, width}]}]
+                for (const item of textContent.items) {
+                    if (!item.str.trim()) continue;
+                    const x = item.transform[4];
+                    const y = item.transform[5];
+                    const row = rows.find(r => Math.abs(r.y - y) <= Y_TOLERANCE);
+                    if (row) {
+                        row.items.push({ x, text: item.str, width: item.width || 0 });
+                    } else {
+                        rows.push({ y, items: [{ x, text: item.str, width: item.width || 0 }] });
+                    }
+                }
+
+                // Sort rows top-to-bottom (PDF Y axis is bottom-up)
+                rows.sort((a, b) => b.y - a.y);
+
+                for (const row of rows) {
+                    row.items.sort((a, b) => a.x - b.x);
+                    let line = '';
+                    for (let j = 0; j < row.items.length; j++) {
+                        if (j === 0) {
+                            line += row.items[j].text;
+                        } else {
+                            const prev = row.items[j - 1];
+                            const gap = row.items[j].x - (prev.x + prev.width);
+                            if (gap > 1) line += ' ';
+                            line += row.items[j].text;
+                        }
+                    }
+                    if (line.trim()) fullText += line.trim() + '\n';
+                }
+            }
+
             // Log in chunks to avoid console truncation
             const chunkSize = 3000;
             for (let i = 0; i < fullText.length; i += chunkSize) {
@@ -651,136 +714,72 @@
         const ALL_SC_CARDS = ['SIMPLY CASH CREDIT CARD', 'PRIORITY BANKING VISA INFINITE'];
 
         function scExtractYear(text) {
-            // SC PDF concatenates date and label: "16 Oct 2024Statement Date:"
-            const reversed = text.match(/(\d{1,2})\s+\w{3}\s+(\d{4})\s*Statement\s+Date/i);
-            if (reversed) return reversed[2];
-            const forward = text.match(/Statement\s+Date\s*:?\s*\d{1,2}\s+\w{3}\s+(\d{4})/i);
-            return forward ? forward[1] : fallbackYear(text);
+            // Coordinate extraction gives clean line: "Statement Date: 15 Mar 2025"
+            const m = text.match(/Statement\s+Date\s*:?\s*\d{1,2}\s+\w{3}\s+(\d{4})/i)
+                   // Fallback for old-style concatenated: "16 Oct 2024Statement Date:"
+                   || text.match(/\d{1,2}\s+\w{3}\s+(\d{4})\s*Statement\s+Date/i);
+            return m ? m[1] : fallbackYear(text);
         }
 
         function parseSCTransactions(text, year, cardIdentifier) {
             const transactions = [];
             const lines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l);
-            let inCardSection  = false;
-            // Exit when any other SC card's section is encountered
+            let inCardSection = false;
             const otherSCCards = ALL_SC_CARDS.filter(c => c !== cardIdentifier);
 
             const monthRe = '(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)';
-            // Matches: DD Mon  DD Mon  AMOUNT[CR]  — captures transaction date, amount, optional CR
-            const dateAmountRe = new RegExp(
-                `^(\\d{1,2}\\s+${monthRe})\\s+\\d{1,2}\\s+${monthRe}\\s+([\\d,]+\\.\\d{2})(CR)?\\s*$`, 'i'
+            // Coordinate extraction puts each row on one line:
+            //   DD Mon  DD Mon  DESCRIPTION  AMOUNT[CR]
+            const txnRe = new RegExp(
+                `^(\\d{1,2}\\s+${monthRe})\\s+\\d{1,2}\\s+${monthRe}\\s+(.+?)\\s+([\\d,]+\\.\\d{2})(CR)?\\s*$`, 'i'
             );
-            // No-ref descriptions (no Transaction Ref on the line)
-            const descSpecialRe = /^(GIRO PAYMENT|CASHBACK)$/i;
 
-            // Statement date for cross-year detection
-            // SC PDF concatenates date and label: "16 Oct 2024Statement Date:" — try reversed first
-            const stmtMatch    = text.match(/(\d{1,2})\s+(\w{3})\s+(\d{4})\s*Statement\s+Date/i)
-                               || text.match(/Statement\s+Date\s*:?\s*(\d{1,2})\s+(\w{3})\s+(\d{4})/i);
+            const stmtMatch = text.match(/Statement\s+Date:\s*(\d{1,2})\s+(\w{3})\s+(\d{4})/i)
+                           || text.match(/(\d{1,2})\s+(\w{3})\s+(\d{4})\s*Statement\s+Date/i);
             const statementYear = stmtMatch ? stmtMatch[3] : year;
             const stmtMonthNum  = stmtMatch ? (MONTHS[stmtMatch[2].toUpperCase()] || 1) : 1;
 
-            let descBuffer      = [];
-            let dateAmountBuffer = [];
-            let inDateBlock     = false;
-
-            function extractDescription(line) {
-                // Skip balance-forward rows — not real transactions
-                if (/BALANCE.*PREVIOUS|PREVIOUS.*BALANCE/i.test(line)) return null;
-
-                // Search for "Transaction Ref" (flexible spacing) within the line
-                const txRefIdx = line.search(/Transaction\s+Ref/i);
-                if (txRefIdx > 0) {
-                    // Standard: MERCHANT ... CITY SG Transaction Ref DIGITS
-                    // Strip "Transaction Ref DIGITS" and trailing CITY SG
-                    const beforeRef = line.substring(0, txRefIdx).trim();
-                    return beforeRef.replace(/\s+\S+\s+SG\s*$/i, '').trim();
-                }
-                if (/^Transaction\s+Ref/i.test(line)) {
-                    // Standard SC format: Transaction Ref DIGITS MERCHANT CITY SG
-                    return line.replace(/^Transaction\s+Ref\s+\d+\s*/i, '')
-                               .replace(/\s+\S+\s+SG\s*$/i, '').trim();
-                }
-                // No-ref: GIRO PAYMENT, CASHBACK, etc.
-                if (descSpecialRe.test(line)) return line.trim();
-                return null;
-            }
-
-            function flushSection() {
-                if (!descBuffer.length && !dateAmountBuffer.length) return;
-                const reversed = [...descBuffer].reverse();
-                if (reversed.length !== dateAmountBuffer.length) {
-                    console.warn(`SC: ${reversed.length} descriptions vs ${dateAmountBuffer.length} date/amount rows — pairing up to min`);
-                }
-                const count = Math.min(reversed.length, dateAmountBuffer.length);
-                for (let i = 0; i < count; i++) {
-                    const { dateStr, amount, isCredit } = dateAmountBuffer[i];
-                    // Cross-year: transaction in Dec on a Jan statement → previous year
-                    const txMonthNum = MONTHS[dateStr.trim().split(/\s+/)[1].toUpperCase()] || 1;
-                    const txYear     = txMonthNum > stmtMonthNum + 6
-                        ? String(parseInt(statementYear) - 1)
-                        : statementYear;
-                    transactions.push({
-                        date:        formatDate(dateStr, txYear),
-                        description: reversed[i],
-                        amount:      isCredit ? amount : -amount
-                    });
-                }
-                descBuffer      = [];
-                dateAmountBuffer = [];
-            }
-
             for (const line of lines) {
-                // Card section entry — ignore everything before the card identifier
                 if (!inCardSection) {
                     if (line.includes(cardIdentifier)) inCardSection = true;
                     continue;
                 }
 
-                // Card section exit — stop when another known SC card's section is encountered.
-                // If no amounts collected yet it's a false start in the account summary —
-                // reset and wait for the real transaction-page entry.
+                // Another SC card encountered — if no transactions yet it's a false start
+                // in the account summary; reset and keep looking for the real section.
                 if (otherSCCards.some(other => line.includes(other))) {
-                    if (dateAmountBuffer.length > 0 || inDateBlock) break;
-                    inCardSection    = false;
-                    descBuffer       = [];
-                    dateAmountBuffer = [];
-                    inDateBlock      = false;
+                    if (transactions.length > 0) break;
+                    inCardSection = false;
                     continue;
                 }
 
-                const dateAmountMatch = line.match(dateAmountRe);
+                const m = line.match(txnRe);
+                if (!m) continue;
 
-                if (dateAmountMatch) {
-                    inDateBlock = true;
-                    const amount = parseFloat(dateAmountMatch[2].replace(/,/g, ''));
-                    if (amount === 0) continue; // skip balance-forward rows
-                    dateAmountBuffer.push({
-                        dateStr:  dateAmountMatch[1],
-                        amount,
-                        isCredit: !!dateAmountMatch[3]
-                    });
-                    continue;
-                }
+                const amount = parseFloat(m[3].replace(/,/g, ''));
+                if (amount === 0) continue;
 
-                if (inDateBlock) {
-                    // Non-date line while in date block — check if it's a new page's descriptions
-                    const desc = extractDescription(line);
-                    if (desc !== null) {
-                        flushSection();
-                        inDateBlock = false;
-                        descBuffer.push(desc);
-                    }
-                    // Otherwise: column header noise — skip
-                    continue;
-                }
+                let description = m[2].trim();
+                // Strip "Transaction Ref DIGITS" suffix — present on most SC transactions
+                const txRefIdx = description.search(/Transaction\s+Ref/i);
+                if (txRefIdx >= 0) description = description.substring(0, txRefIdx).trim();
+                // Strip trailing merchant location "WORD SG" (e.g. "SINGAPORE SG")
+                description = description.replace(/\s+\S+\s+SG\s*$/i, '').trim();
+                if (!description) continue;
 
-                // Description collection phase
-                const desc = extractDescription(line);
-                if (desc !== null) descBuffer.push(desc);
+                const isCredit = !!m[4];
+                const txMonthNum = MONTHS[m[1].trim().split(/\s+/)[1].toUpperCase()] || 1;
+                const txYear = txMonthNum > stmtMonthNum + 6
+                    ? String(parseInt(statementYear) - 1) : statementYear;
+
+                transactions.push({
+                    date: formatDate(m[1], txYear),
+                    description,
+                    amount: isCredit ? amount : -amount
+                });
             }
 
-            flushSection();
+            console.log(`[SC ${cardIdentifier}] ${transactions.length} transactions parsed`);
             return transactions;
         }
 
@@ -904,6 +903,14 @@
             'sc-simply-cash': {
                 name: 'SC Simply Cash',
                 cardIdentifier: 'SIMPLY CASH CREDIT CARD',
+                coordinateExtraction: true,
+                extractYear: scExtractYear,
+                parseTransactions: parseSCTransactions
+            },
+            'sc-priority-banking': {
+                name: 'SC Priority Banking Visa Infinite',
+                cardIdentifier: 'PRIORITY BANKING VISA INFINITE',
+                coordinateExtraction: true,
                 extractYear: scExtractYear,
                 parseTransactions: parseSCTransactions
             },
@@ -942,7 +949,8 @@
             const parser = PARSERS[cardType];
             if (!parser) throw new Error('Unsupported card type: ' + cardType);
             const isPDF = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
-            const text = isPDF ? await extractTextFromPDF(file) : await file.text();
+            const extractor = parser.coordinateExtraction ? extractTextFromPDFByCoordinates : extractTextFromPDF;
+            const text = isPDF ? await extractor(file) : await file.text();
             const year = parser.extractYear(text);
             if (parser.cardIdentifier) return parser.parseTransactions(text, year, parser.cardIdentifier);
             return parser.parseTransactions(text, year);
@@ -961,6 +969,7 @@
                 'uob-preferred': 'UOB_Preferred_Platinum',
                 'amex-krisflyer': 'AMEX_KrisFlyer',
                 'sc-simply-cash': 'SC_Simply_Cash',
+                'sc-priority-banking': 'SC_Priority_Banking',
                 'hsbc-advance': 'HSBC_Advance',
                 'hsbc-revolution': 'HSBC_Revolution',
             };

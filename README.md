@@ -6,17 +6,18 @@ A privacy-first, client-side tool that converts bank and credit card PDF stateme
 
 ## Supported Cards
 
-| Bank | Card | Status |
-| ------ | ------ | -------- |
-| Citi | SMRT Platinum Visa | ✅ Supported |
-| Citi | Rewards World Mastercard | ✅ Supported |
-| UOB | Absolute Cashback (AMEX) | ✅ Supported |
-| UOB | PRVI Miles (Mastercard) | ✅ Supported |
-| UOB | Preferred Platinum (Visa) | ✅ Supported |
-| AMEX | KrisFlyer (Singapore Airlines) | ✅ Supported |
-| SC | Simply Cash | ✅ Supported |
-| HSBC | Advance | ✅ Supported (requires OCR pre-processing via `ocrmypdf`) |
-| HSBC | Revolution | ✅ Supported (requires OCR pre-processing via `ocrmypdf`) |
+| Bank | Card | Type | Status | Notes |
+| ------ | ------ | ------ | -------- | ----- |
+| Citi | SMRT Platinum | Visa | ✅ Supported | |
+| Citi | Rewards World | Mastercard | ✅ Supported | |
+| UOB | Absolute Cashback | AMEX | ✅ Supported | |
+| UOB | PRVI Miles | Mastercard | ✅ Supported | |
+| UOB | Preferred Platinum | Visa | ✅ Supported | |
+| AMEX | KrisFlyer (Singapore Airlines) | AMEX | ✅ Supported | |
+| SC | Simply Cash | Mastercard | ✅ Supported | |
+| SC | Priority Banking Visa Infinite | Visa | ✅ Supported | |
+| HSBC | Advance | Visa | ✅ Supported | Requires OCR pre-processing via `ocrmypdf` |
+| HSBC | Revolution | Visa | ✅ Supported | Requires OCR pre-processing via `ocrmypdf` |
 
 ## Quick Start
 
