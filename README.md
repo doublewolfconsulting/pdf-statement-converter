@@ -16,8 +16,8 @@ A privacy-first, client-side tool that converts bank and credit card PDF stateme
 | AMEX | KrisFlyer (Singapore Airlines) | AMEX | ✅ Supported | |
 | SC | Simply Cash | Mastercard | ✅ Supported | |
 | SC | Priority Banking Visa Infinite | Visa | ✅ Supported | |
-| HSBC | Advance | Visa | ✅ Supported | Requires OCR pre-processing via `ocrmypdf` |
-| HSBC | Revolution | Visa | ✅ Supported | Requires OCR pre-processing via `ocrmypdf` |
+| HSBC | Advance | Visa | ✅ Supported | Requires OCR pre-processing — run `preprocess.sh` first |
+| HSBC | Revolution | Visa | ✅ Supported | Requires OCR pre-processing — run `preprocess.sh` first |
 
 ## Quick Start
 
@@ -42,6 +42,17 @@ brew install ocrmypdf
 
 The script outputs `*_ocr.pdf` files alongside the originals. Upload those to the converter.
 
+For automated processing, `watch.sh` monitors a folder and OCRs new PDFs as they arrive:
+
+```bash
+# Install once
+brew install ocrmypdf fswatch
+
+# Watch ~/Downloads (or pass a custom folder)
+./watch.sh
+./watch.sh ~/Documents/Statements
+```
+
 ### Alternative: GitHub Pages
 
 If you fork this repo, you can enable GitHub Pages in your repo settings (Settings → Pages → Source: main branch) to get a hosted version at `https://<your-username>.github.io/pdf-statement-converter/`.
@@ -58,7 +69,8 @@ If you fork this repo, you can enable GitHub Pages in your repo settings (Settin
 ``` text
 pdf-statement-converter/
 ├── index.html                # Main application (open this in your browser)
-├── preprocess.sh             # OCR helper script for scanned PDFs (HSBC)
+├── preprocess.sh             # OCR helper — manually process one or more PDFs
+├── watch.sh                  # OCR watcher — auto-processes PDFs as they arrive in a folder
 ├── categories.default.js     # Default English categories — copy this to get started
 ├── categories.personal.js    # Personal categories — loaded by default
 ├── README.md                 # This file
