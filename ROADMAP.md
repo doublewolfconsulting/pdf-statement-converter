@@ -18,20 +18,19 @@ Development priorities for PDF Statement Converter. Items are roughly ordered by
 ## Phase 2: Credit Card Parsers
 
 - [x] AMEX KrisFlyer parser
-- [x] SC Simply Cash parser
-- [x] SC Priority Banking Visa Infinite parser
+- [x] Standard Chartered Simply Cash parser
+- [x] Standard Chartered Priority Banking Visa Infinite parser
 - [x] HSBC Advance credit card parser (requires `ocrmypdf` pre-processing)
 - [x] HSBC Revolution credit card parser (requires `ocrmypdf` pre-processing)
 - [ ] DBS credit card parser
 - [ ] YOUTRIP parser
 - [ ] REVOLUT parser
-- [ ] Auto-detect card type from PDF content (no manual selection needed)
 
 ## Phase 3: Bank Account Parsers
 
 Requires QIF account type research — deferred until Phase 2 is complete.
 
-- [ ] SC bank account parser
+- [ ] Standard Chartered bank account parser
 - [ ] HSBC bank account parser
 
 ## Phase 4: Interactive Brokers Parsers
@@ -42,20 +41,19 @@ Most complex — multiple statement types, multi-currency, securities transactio
 
 ## Phase 5: Export Formats
 
-- [ ] Export format dropdown (QIF and CSV, and future formats)
-- [ ] CSV export with configurable column mapping
-- [ ] OFX export (broader accounting software support)
-- [ ] JSON export (for developers / custom pipelines)
+- [ ] Introduce additional export formats
+- [ ] Export format dropdown selector
 
 ## Phase 6: Parsing Quality & UX
 
-- [x] Rewrite `extractTextFromPDF` to reconstruct rows by Y/X coordinate grouping — eliminates fragile two-buffer pairing in SC parser and simplifies any future multi-column statement parsers
+- [x] Rewrite `extractTextFromPDF` to reconstruct rows by Y/X coordinate grouping — eliminates fragile two-buffer pairing in Standard Chartered parser and simplifies any future multi-column statement parsers
 - [x] Improve OCR quality for scanned PDFs (HSBC) — in-browser Tesseract.js attempted but abandoned due to two-column layout mixing and missing decimals; `preprocess.sh` (ocrmypdf) is current solution; future option: server-side or native OCR pipeline
 - [ ] Transaction preview table before export (review before download)
 - [ ] Uncategorized transaction highlighting
 - [ ] Manual category override in preview
 - [ ] Duplicate detection across multiple uploads
 - [ ] Running total / balance validation against statement totals
+- [ ] Auto-detect card type from PDF content (no manual selection needed)
 - [ ] Drag-and-drop file upload
 
 ## Phase 7: Category Management
