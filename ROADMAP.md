@@ -4,8 +4,8 @@ Development priorities for PDF Statement Converter. Items are roughly ordered by
 
 ## Phase 1: Foundation (Current)
 
-- [x] Citi SMRT Platinum Visa parser
-- [x] Citi Rewards World Mastercard parser
+- [x] Citibank SMRT Platinum Visa parser
+- [x] Citibank Rewards World Mastercard parser
 - [x] UOB Absolute Cashback parser
 - [x] UOB PRVI Miles parser
 - [x] UOB Preferred Platinum parser
