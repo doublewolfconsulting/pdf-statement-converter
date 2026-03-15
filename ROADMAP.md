@@ -53,7 +53,7 @@ Most complex — multiple statement types, multi-currency, securities transactio
 ## Phase 6: Parsing Quality & UX
 
 - [x] Rewrite `extractTextFromPDF` to reconstruct rows by Y/X coordinate grouping — eliminates fragile two-buffer pairing in SC parser and simplifies any future multi-column statement parsers
-- [ ] Improve OCR quality for scanned PDFs (HSBC) — in-browser Tesseract.js attempted but abandoned due to two-column layout mixing and missing decimals; `preprocess.sh` (ocrmypdf) is current solution; future option: server-side or native OCR pipeline
+- [x] Improve OCR quality for scanned PDFs (HSBC) — in-browser Tesseract.js attempted but abandoned due to two-column layout mixing and missing decimals; `preprocess.sh` (ocrmypdf) is current solution; future option: server-side or native OCR pipeline
 - [ ] Transaction preview table before export (review before download)
 - [ ] Uncategorized transaction highlighting
 - [ ] Manual category override in preview
