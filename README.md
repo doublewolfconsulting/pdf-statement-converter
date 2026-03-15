@@ -112,4 +112,4 @@ Contributions are welcome! See [ROADMAP.md](ROADMAP.md) for planned features. Th
 
 ## License
 
-Source-available, personal use only. See [LICENSE](LICENSE) for details. For commercial licensing inquiries, please open an issue.
+Licensed under the [PolyForm Noncommercial License 1.0.0](LICENSE). Free for personal, non-commercial use. For commercial licensing inquiries, please open an issue.

@@ -5,7 +5,7 @@
 Privacy-first, client-side tool that converts bank/card PDF statements into accounting formats (QIF, with more formats planned). All processing happens in the browser — no financial data is ever sent to a server or stored anywhere.
 
 Copyright (c) 2026 Double Wolf Consulting. All rights reserved.
-Source-available for personal, non-commercial use only. See LICENSE.
+Licensed under PolyForm Noncommercial License 1.0.0. See LICENSE.
 
 ## Tech Stack
 
@@ -21,7 +21,7 @@ pdf-statement-converter/
 ├── CLAUDE.md          # This file — project context for Claude Code
 ├── README.md          # User-facing documentation
 ├── ROADMAP.md         # Planned features and priorities
-├── LICENSE            # Source-available, personal use only
+├── LICENSE            # PolyForm Noncommercial License 1.0.0
 ├── .gitignore         # Blocks *.pdf, *.qif, *.csv — never commit financial data
 ├── index.html         # Main application (UI + parsers + QIF generation)
 └── categories.personal.js  # Category rules for auto-classification (external config)
