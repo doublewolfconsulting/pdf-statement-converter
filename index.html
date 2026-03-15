@@ -182,7 +182,6 @@
                 <option value="uob-preferred">UOB Preferred Platinum</option>
                 <option value="amex-krisflyer">AMEX KrisFlyer</option>
                 <option value="sc-simply-cash">SC Simply Cash</option>
-                <option value="sc-priority">SC Priority Banking Visa Infinite</option>
             </select>
             <div class="custom-select" id="cardTypeSelect">
                 <div class="custom-select-trigger" id="cardTypeTrigger">Citi SMRT Platinum Visa</div>
@@ -194,7 +193,6 @@
                     <li data-value="uob-preferred">UOB Preferred Platinum</li>
                     <li data-value="amex-krisflyer">AMEX KrisFlyer</li>
                     <li data-value="sc-simply-cash">SC Simply Cash</li>
-                    <li data-value="sc-priority">SC Priority Banking Visa Infinite</li>
                 </ul>
             </div>
         </div>
@@ -628,7 +626,7 @@
         }
 
         // ============================================================
-        // Standard Chartered parser (Simply Cash + Priority Banking Visa Infinite)
+        // Standard Chartered Simply Cash parser
         //
         // SC PDFs have a 4-column table (Trans Date | Post Date | Description | Amount).
         // PDF.js extracts the Description column separately from the date/amount columns,
@@ -850,12 +848,6 @@
                 extractYear: scExtractYear,
                 parseTransactions: parseSCTransactions
             },
-            'sc-priority': {
-                name: 'SC Priority Banking Visa Infinite',
-                cardIdentifier: 'PRIORITY BANKING VISA INFINITE',
-                extractYear: scExtractYear,
-                parseTransactions: parseSCTransactions
-            }
         };
 
         // ============================================================
@@ -900,7 +892,6 @@
                 'uob-preferred': 'UOB_Preferred_Platinum',
                 'amex-krisflyer': 'AMEX_KrisFlyer',
                 'sc-simply-cash': 'SC_Simply_Cash',
-                'sc-priority': 'SC_Priority_Banking'
             };
             document.getElementById('outputFilename').value = filenameMap[cardType] || 'statement';
         }
